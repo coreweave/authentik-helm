@@ -37,14 +37,8 @@ spec:
       {{- if $.Values.serviceAccount.create }}
       serviceAccountName: {{ include "authentik-remote-cluster.fullname" .Subcharts.serviceAccount }}
       {{- end }}
-      {{- with $.Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with $.Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "coreweave.affinity" . | nindent 6 }}
+      {{- include "coreweave.tolerations" . | nindent 6 }}
       {{- with $.Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -77,7 +71,7 @@ spec:
             - name: {{ quote $k }}
               value: {{ quote $v }}
             {{- end }}
-            {{- range $name, $val := $.Values.envValueFrom }}
+            {{- range $name, $val := (include "coreweave.envValueFrom" . | fromYaml ).envValueFrom }}
             - name: {{ $name }}
               valueFrom:
                 {{- toYaml $val | nindent 16 }}
@@ -96,7 +90,7 @@ spec:
             {{- with $.Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-            {{- with $.Values.blueprints }}
+            {{- with (include "coreweave.blueprints" . | fromYaml ).blueprints }}
               {{- range $name := . }}
             - name: blueprints-{{ $name }}
               mountPath: /blueprints/mounted/{{ $name }}
@@ -152,7 +146,7 @@ spec:
       {{- with $.Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with $.Values.blueprints }}
+      {{- with (include "coreweave.blueprints" . | fromYaml ).blueprints }}
         {{- range $name := . }}
         - name: blueprints-{{ $name }}
           configMap:

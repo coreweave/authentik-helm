@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  groups-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty .Values.customBlueprints.groups | not }}"
+      name: Custom Blueprints - Groups
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - LDAP Provider
+        required: false
+    {{- range .Values.customBlueprints.groups }}
+    - attrs:
+        {{- if .attributes }}
+        attributes: {{ toYaml .attributes | nindent 10 }}
+        {{- else }}
+        attributes: {}
+        {{- end }}
+        name: {{ .name }}
+        is_superuser: {{ default "false" .isSuperUser }}
+        {{- if .parent }}
+        parent: {{ .parent }}{{- end }}
+      conditions: []
+      id: {{ .name }}
+      identifiers:
+        name: {{ .name }}
+      model: authentik_core.group
+      state: present
+    {{- end }}
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-groups-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}

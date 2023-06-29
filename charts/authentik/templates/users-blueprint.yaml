@@ -1,0 +1,54 @@
+apiVersion: v1
+data:
+  users-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty .Values.customBlueprints.users | not }}"
+      name: Custom Blueprints - Users
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - LDAP Provider
+        required: false
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - Groups
+        required: {{ empty .Values.customBlueprints.groups | not }}
+    {{- range .Values.customBlueprints.users }}
+    - attrs:
+        {{- if .attributes }}
+        attributes: {{ toYaml .attributes | nindent 10 }}
+        {{- else }}
+        attributes: {}
+        {{- end }}
+        {{- if .groups }}
+        groups:
+        {{- range .groups }}
+        - !Find [authentik_core.group, [name, "{{ . }}"]]
+        {{- end }}
+        {{- end }}
+        name: {{ .name }}
+        path: {{ default "users" .path }}
+        username: {{ .userName }}
+        is_active: {{ default "true" .isActive }}
+        {{- if .email }}
+        email: {{ .email }}{{- end }}
+        {{- if .password }}
+        password: {{ .password }}{{- end }}
+      conditions: []
+      id: {{ .userName }}
+      identifiers:
+        name: {{ .name }}
+      model: authentik_core.user
+      state: present
+    {{- end }}
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-users-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}

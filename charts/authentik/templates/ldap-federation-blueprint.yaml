@@ -1,0 +1,85 @@
+apiVersion: v1
+data:
+  ldap-federation-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values.customBlueprints).federation).ldap | not }}"
+      name: Custom Blueprints - LDAP Federation
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - Groups
+        required: {{ empty .Values.customBlueprints.groups | not }}
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - Google Secure LDAP Mappings
+        required: true
+    {{- range ((.Values.customBlueprints).federation).ldap }}
+    - attrs:
+        name: {{ default "ldap-source" .name }}
+        slug: {{ default "ldap-source" .name }}
+        enabled: true
+        policy_engine_mode: any
+        user_matching_mode: {{ default "identifier" .userMatchingMode }}
+        user_path_template: {{ default "goauthentik.io/sources/%(slug)s" .userPathTemplate }}
+        {{- if .peerCertificate }}
+        peer_certificate: !Find [authentik_crypto.certificatekeypair, [name, {{ .peerCertificate }}]]{{ end }}
+        {{- if .clientCertificate }}
+        client_certificate: !Find [authentik_crypto.certificatekeypair, [name, {{ .clientCertificate }}]]{{ end }}
+        {{- if .bindCN }}
+        bind_cn: {{ .bindCN }}{{ end }}
+        {{- if .bindPassword }}
+        bind_password: {{ .bindPassword }}{{ end }}
+        start_tls: {{ default "false" .startTLS }}
+        sni: {{ default "false" .sni }}
+        base_dn: {{ default "DC=coreweave,DC=cloud" .baseDN }}
+        user_object_filter: {{ default "(objectClass=posixAccount)" .userObjectFilter }}
+        group_object_filter: {{ default "(objectClass=posixGroup)" .groupObjectFilter }}
+        group_membership_field: {{ default "member" .groupMemberAttribute }}
+        object_uniqueness_field: {{ default "cn" .uniquenessAttribute }}
+        sync_users: {{ default "true" .syncUsers }}
+        sync_users_password: {{ default "false" .passwordWriteback }}
+        sync_groups: {{ default "true" .syncGroups }}
+        {{- if .parentGroup }}
+        sync_parent_group: !Find [authentik_core.group, [name, {{ .parentGroup }}]]{{ end }}
+        {{- if eq "googleLDAP" .type  }}
+        property_mappings: !Enumerate [
+            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: departmentNumber", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: employeeNumber", "Google Secure LDAP Mapping: employeeType", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: givenName", "Google Secure LDAP Mapping: googleUid", "Google Secure LDAP Mapping: homeDirectory", "Google Secure LDAP Mapping: jpegPhoto", "Google Secure LDAP Mapping: loginShell", "Google Secure LDAP Mapping: mail", "Google Secure LDAP Mapping: memberOf", "Google Secure LDAP Mapping: objectSid", "Google Secure LDAP Mapping: physicalDeliveryOfficeName", "Google Secure LDAP Mapping: posixUid", "Google Secure LDAP Mapping: sn", "Google Secure LDAP Mapping: sshPublicKey", "Google Secure LDAP Mapping: title", "Google Secure LDAP Mapping: uid", "Google Secure LDAP Mapping: uidNumber"],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        property_mappings_group: !Enumerate [
+            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: description", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: gidNumber", "Google Secure LDAP Mapping: googleAdminCreated", "Google Secure LDAP Mapping: member", "Google Secure LDAP Mapping: memberUid", "Google Secure LDAP Mapping: objectSid"],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        {{- else }}
+        property_mappings: !Enumerate [
+            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: departmentNumber", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: employeeNumber", "Google Secure LDAP Mapping: employeeType", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: givenName", "Google Secure LDAP Mapping: googleUid", "Google Secure LDAP Mapping: homeDirectory", "Google Secure LDAP Mapping: jpegPhoto", "Google Secure LDAP Mapping: loginShell", "Google Secure LDAP Mapping: mail", "Google Secure LDAP Mapping: memberOf", "Google Secure LDAP Mapping: objectSid", "Google Secure LDAP Mapping: physicalDeliveryOfficeName", "Google Secure LDAP Mapping: posixUid", "Google Secure LDAP Mapping: sn", "Google Secure LDAP Mapping: sshPublicKey", "Google Secure LDAP Mapping: title", "Google Secure LDAP Mapping: uid", "Google Secure LDAP Mapping: uidNumber","authentik default Active Directory Mapping: sAMAccountName","authentik default Active Directory Mapping: userPrincipalName],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        property_mappings_group: !Enumerate [
+            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: description", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: gidNumber", "Google Secure LDAP Mapping: googleAdminCreated", "Google Secure LDAP Mapping: member", "Google Secure LDAP Mapping: memberUid", "Google Secure LDAP Mapping: objectSid"],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        {{- end }}
+        server_uri: {{ default "ldap://openldap" .serverUri }}
+      conditions: []
+      name: {{ default "ldap-source" .name }}
+      identifiers:
+        name: {{ default "ldap-source" .name }}
+      model: authentik_sources_ldap.ldapsource
+      state: present
+    {{- end }}
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ldap-federation-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}
