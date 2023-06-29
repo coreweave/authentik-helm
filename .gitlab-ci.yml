@@ -1,0 +1,45 @@
+---
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_BRANCH == 'coreweave'
+      when: always
+
+default:
+  tags:
+    - ord1-tenant
+
+Helm lint:
+  stage: test
+  allow_failure: true
+  image:
+    name: alpine/helm:3.12.1
+    entrypoint: [""]
+  script:
+    - cd charts/authentik
+    - helm dep update
+    - helm lint .
+  needs: []
+
+Helm push:
+  stage: deploy
+  only:
+    refs:
+      - coreweave
+    changes:
+      - charts/authentik/*
+  image:
+    name: alpine/helm:3.12.1
+    entrypoint: [""]
+  script:
+    - apk add git
+    - helm plugin install https://github.com/chartmuseum/helm-push.git
+    - cd charts
+    - HELM_BETA_REPO_PASS_DECODED="$(echo $HELM_BETA_REPO_PASS | base64 -d)"
+    - helm repo add helm_repo $HELM_BETA_REPO_URL --username $HELM_BETA_REPO_USER --password $HELM_BETA_REPO_PASS_DECODED
+    - helm repo add authentik https://charts.goauthentik.io && helm repo update
+    - for x in $(find . -maxdepth 1 -mindepth 1 -type d -not -path "./authentik"); do helm package $x --destination ./authentik/charts; done
+    - helm cm-push ./authentik helm_repo
+  needs:
+    - Helm lint
