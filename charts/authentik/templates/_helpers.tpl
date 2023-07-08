@@ -99,7 +99,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.fullnameOverride -}}
 {{ default (printf "%s.%s.%s.ingress.coreweave.cloud" .Values.fullnameOverride .Release.Namespace (.Values.region | lower | toString)) .Values.customExternalDnsName }}
 {{- else -}}
-{{ default (printf "%s.%s.%s.ingress.coreweave.cloud" .Release.Name .Release.Namespace (.Values.region | lower | toString)) .Values.customExternalDnsName }}
+{{ default (printf "%s.%s.%s.ingress.coreweave.cloud" .Release.Name .Release.Namespace ((default "ORD1" .Values.region) | lower | toString)) .Values.customExternalDnsName }}
 {{- end -}}
 {{- end -}}
 

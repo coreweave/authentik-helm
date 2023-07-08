@@ -5,7 +5,7 @@ data:
     context: {}
     metadata:
       labels:
-        blueprints.goauthentik.io/instantiate: "{{ empty .Values.customBlueprints.users | not }}"
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values).customBlueprints).users | not }}"
       name: Custom Blueprints - Users
     version: 1
     entries:
@@ -18,8 +18,8 @@ data:
       attrs:
         identifiers:
           name: Custom Blueprints - Groups
-        required: {{ empty .Values.customBlueprints.groups | not }}
-    {{- range .Values.customBlueprints.users }}
+        required: {{ empty ((.Values).customBlueprints).groups | not }}
+    {{- range ((.Values).customBlueprints).users }}
     - attrs:
         {{- if .attributes }}
         attributes: {{ toYaml .attributes | nindent 10 }}

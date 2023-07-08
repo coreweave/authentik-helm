@@ -5,7 +5,7 @@ data:
     context: {}
     metadata:
       labels:
-        blueprints.goauthentik.io/instantiate: "{{ empty .Values.customBlueprints.ldapProvider | not }}"
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values).customBlueprints).ldapProvider | not }}"
       name: Custom Blueprints - LDAP Provider
     version: 1
     entries:
@@ -45,14 +45,14 @@ data:
       state: present
     - attrs:
         authorization_flow: !Find [authentik_flows.flow, [slug, "default-authentication-flow"]]
-        base_dn: DC={{ (default "coreweave.cloud" ((.Values).customBlueprints).ldapProvider.domain) | replace "." ",DC=" }}
+        base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
         bind_mode: cached
         gid_start_number: 4000
         mfa_support: true
         name: LDAP
         search_group: !KeyOf ldap_search_group
         search_mode: cached
-        tls_server_name: {{ default "coreweave.cloud" ((.Values).customBlueprints).ldapProvider.domain }}
+        tls_server_name: {{ default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain }}
         uid_start_number: 2000
       conditions: []
       id: ldap_provider
@@ -74,14 +74,14 @@ data:
     - attrs:
         config:
           authentik_host: http://{{ $.Release.Name }}
-          authentik_host_insecure: {{ default "false" .Values.customBlueprints.ldapProvider.hostInsecure }}
+          authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
           kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
           kubernetes_namespace: {{ $.Release.Namespace }}
-          kubernetes_replicas: {{ default "1" .Values.customBlueprints.ldapProvider.replicas }}
-          kubernetes_service_type: {{ default "ClusterIP" .Values.customBlueprints.ldapProvider.serviceType }}
-          log_level: {{ default "info" .Values.customBlueprints.ldapProvider.logLevel }}
+          kubernetes_replicas: {{ default "1" (((.Values).customBlueprints).ldapProvider).replicas }}
+          kubernetes_service_type: {{ default "ClusterIP" (((.Values).customBlueprints).ldapProvider).serviceType }}
+          log_level: {{ default "info" (((.Values).customBlueprints).ldapProvider).logLevel }}
           object_naming_template: {{ $.Release.Name }}-outpost-%(name)s
-          {{- if .Values.customBlueprints.ldapProvider.config }}{{- toYaml .Values.customBlueprints.ldapProvider.config | nindent 10 }}{{ end }}
+          {{- if (((.Values).customBlueprints).ldapProvider).config }}{{- toYaml (((.Values).customBlueprints).ldapProvider).config | nindent 10 }}{{ end }}
         name: ldap
         providers:
         - !KeyOf ldap_provider

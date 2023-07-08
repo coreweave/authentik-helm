@@ -13,7 +13,7 @@ data:
       attrs:
         identifiers:
           name: Custom Blueprints - Groups
-        required: {{ empty .Values.customBlueprints.groups | not }}
+        required: {{ empty ((.Values).customBlueprints).groups | not }}
     - model: authentik_blueprints.metaapplyblueprint
       attrs:
         identifiers:
