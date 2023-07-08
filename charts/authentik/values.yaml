@@ -200,6 +200,22 @@ volumes: []
 
 volumeMounts: []
 
+# -- Add client or peer certificate for LDAP federation
+# volumes:
+# - name: ldap-certificate
+#   secret:
+#     secretName: ldap-certificate
+#     defaultMode: 0666
+#     items:
+#     - key: tls.crt
+#       path: fullchain.pem
+#     - key: tls.key
+#       path: privkey.pem
+# volumeMounts:
+# - name: ldap-certificate
+#   mountPath: /certs/ldap-certificate
+#   readOnly: true
+
 # -- affinity applied to the deployments
 affinity: {}
 
