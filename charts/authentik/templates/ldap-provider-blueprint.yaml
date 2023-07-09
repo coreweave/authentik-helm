@@ -73,7 +73,7 @@ data:
       state: present
     - attrs:
         config:
-          authentik_host: http://{{ $.Release.Name }}
+          authentik_host: http://{{ include "authentik.names.fullname" . }}
           authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
           kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
           kubernetes_namespace: {{ $.Release.Namespace }}
