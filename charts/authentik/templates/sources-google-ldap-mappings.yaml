@@ -199,7 +199,7 @@ data:
           name: "Google Secure LDAP Mapping: description"
           object_field: "attributes.description"
           expression: |
-            return list_flatten(ldap.get('description'))
+            return ldap.get('description')
       - identifiers:
           managed: goauthentik.io/sources/ldap/google-member
         model: authentik_sources_ldap.ldappropertymapping
@@ -207,7 +207,7 @@ data:
           name: "Google Secure LDAP Mapping: member"
           object_field: "attributes.member"
           expression: |
-            return list_flatten(ldap.get('member'))
+            return ldap.get('member')
       - identifiers:
           managed: goauthentik.io/sources/ldap/google-memberuid
         model: authentik_sources_ldap.ldappropertymapping
@@ -215,7 +215,7 @@ data:
           name: "Google Secure LDAP Mapping: memberUid"
           object_field: "attributes.memberUid"
           expression: |
-            return list_flatten(ldap.get('memberUid'))
+            return ldap.get('memberUid')
       - identifiers:
           managed: goauthentik.io/sources/ldap/google-googleadmincreated
         model: authentik_sources_ldap.ldappropertymapping
@@ -223,7 +223,7 @@ data:
           name: "Google Secure LDAP Mapping: googleAdminCreated"
           object_field: "attributes.googleAdminCreated"
           expression: |
-            return list_flatten(ldap.get('googleAdminCreated'))
+            return ldap.get('googleAdminCreated')
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-google-ldap-mapping-blueprint
