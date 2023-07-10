@@ -1,0 +1,87 @@
+apiVersion: v1
+data:
+  okta-ldap-mapping-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values.customBlueprints).federation).ldap | not }}"
+      name: Custom Blueprints - Okta LDAP Mappings
+    entries:
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-uid
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: uid"
+          object_field: "username"
+          expression: |
+            return ldap.get('uid')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-cn
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: cn"
+          object_field: "name"
+          expression: |
+            return ldap.get('cn')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-givenname
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: givenName"
+          object_field: "attributes.givenName"
+          expression: |
+            return list_flatten(ldap.get('givenName'))
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-sn
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: sn"
+          object_field: "attributes.sn"
+          expression: |
+            return list_flatten(ldap.get('sn'))
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-displayname
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: displayName"
+          object_field: "attributes.displayName"
+          expression: |
+            return ldap.get('cn')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-mail
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: mail"
+          object_field: "email"
+          expression: |
+            return ldap.get('mail')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-description
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: description"
+          object_field: "attributes.description"
+          expression: |
+            return ldap.get('description')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-uniquemember
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: uniqueMember"
+          object_field: "attributes.uniqueMember"
+          expression: |
+            return ldap.get('uniqueMember')
+      - identifiers:
+          managed: goauthentik.io/sources/ldap/okta-memberof
+        model: authentik_sources_ldap.ldappropertymapping
+        attrs:
+          name: "Okta LDAP Mapping: memberOf"
+          object_field: "attributes.memberOf"
+          expression: |
+            return ldap.get('memberOf')
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-okta-ldap-mapping-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}

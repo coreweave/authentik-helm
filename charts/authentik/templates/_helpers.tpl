@@ -183,6 +183,7 @@ blueprints:
   - {{ .Release.Name }}-groups-blueprint
   - {{ .Release.Name }}-ldap-federation-blueprint
   - {{ .Release.Name }}-google-ldap-mapping-blueprint
+  - {{ .Release.Name }}-okta-ldap-mapping-blueprint
 {{- if .Values.blueprints }}
 {{- with .Values.blueprints }}
 {{- toYaml . | nindent 2 }}

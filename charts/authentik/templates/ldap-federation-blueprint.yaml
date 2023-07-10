@@ -19,6 +19,11 @@ data:
         identifiers:
           name: Custom Blueprints - Google Secure LDAP Mappings
         required: true
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - Okta LDAP Mappings
+        required: true
     {{- range ((.Values.customBlueprints).federation).ldap }}
     - attrs:
         name: {{ default "ldap-source" .name }}
@@ -38,6 +43,10 @@ data:
         start_tls: {{ default "false" .startTLS }}
         sni: {{ default "false" .sni }}
         base_dn: {{ default "DC=coreweave,DC=cloud" .baseDN }}
+        {{- if .additionalUserDN }}
+        additional_user_dn: {{ .additionalUserDN }}{{ end }}
+        {{- if .additionalGroupDN }}
+        additional_group_dn: {{ .additionalGroupDN }}{{ end }}
         user_object_filter: {{ default "(objectClass=posixAccount)" .userObjectFilter }}
         group_object_filter: {{ default "(objectClass=posixGroup)" .groupObjectFilter }}
         group_membership_field: {{ default "member" .groupMemberAttribute }}
@@ -55,6 +64,17 @@ data:
         ]
         property_mappings_group: !Enumerate [
             ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: description", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: gidNumber", "Google Secure LDAP Mapping: googleAdminCreated", "Google Secure LDAP Mapping: member", "Google Secure LDAP Mapping: memberUid", "Google Secure LDAP Mapping: objectSid"],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        {{- else if eq "oktaLDAP" .type  }}
+        property_mappings: !Enumerate [
+            ["Okta LDAP Mapping: uid", "Okta LDAP Mapping: givenName", "Okta LDAP Mapping: sn", "Okta LDAP Mapping: mail", "Okta LDAP Mapping: cn", "Google Secure LDAP Mapping: sshPublicKey"],
+            SEQ,
+            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+        ]
+        property_mappings_group: !Enumerate [
+            ["Okta LDAP Mapping: description", "Okta LDAP Mapping: uniqueMember", "Okta LDAP Mapping: memberOf", "Okta LDAP Mapping: cn"],
             SEQ,
             !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
         ]
