@@ -191,7 +191,7 @@ data:
           name: "Google Secure LDAP Mapping: sshPublicKey"
           object_field: "attributes.sshPublicKey"
           expression: |
-            return list_flatten(ldap.get('sshPublicKey'))
+            return ldap.get('sshPublicKey')
       - identifiers:
           managed: goauthentik.io/sources/ldap/google-description
         model: authentik_sources_ldap.ldappropertymapping
