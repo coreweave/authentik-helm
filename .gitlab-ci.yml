@@ -28,7 +28,7 @@ Helm push:
     refs:
       - coreweave
     changes:
-      - charts/authentik/*
+      - charts/**/*
   image:
     name: alpine/helm:3.12.1
     entrypoint: [""]
@@ -40,6 +40,6 @@ Helm push:
     - helm repo add helm_repo $HELM_BETA_REPO_URL --username $HELM_BETA_REPO_USER --password $HELM_BETA_REPO_PASS_DECODED
     - helm repo add authentik https://charts.goauthentik.io && helm repo update
     - for x in $(find . -maxdepth 1 -mindepth 1 -type d -not -path "./authentik"); do helm package $x --destination ./authentik/charts; done
-    - helm cm-push ./authentik helm_repo
+    - helm cm-push ./authentik helm_repo -f
   needs:
     - Helm lint
