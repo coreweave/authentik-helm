@@ -34,14 +34,8 @@ spec:
       imagePullSecrets:
         {{- toYaml $.Values.image.pullSecrets | nindent 8 }}
       {{- end }}
-      {{- with $.Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with $.Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "coreweave.affinity" . | nindent 6 }}
+      {{- include "coreweave.tolerations" . | nindent 6 }}
       {{- with $.Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -74,7 +68,7 @@ spec:
             - name: {{ quote $k }}
               value: {{ quote $v }}
             {{- end }}
-            {{- range $name, $val := $.Values.envValueFrom }}
+            {{- range $name, $val := (include "coreweave.envValueFrom" . | fromYaml ).envValueFrom }}
             - name: {{ $name }}
               valueFrom:
                 {{- toYaml $val | nindent 16 }}

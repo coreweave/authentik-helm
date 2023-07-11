@@ -9,38 +9,24 @@ metadata:
     {{- with .Values.ingress.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+{{ include "coreweave.ingressAnnotations" . | indent 2 }}
 spec:
   {{- if and $apiIsStable .Values.ingress.ingressClassName }}
   ingressClassName: {{ $.Values.ingress.ingressClassName }}
   {{- end }}
-  {{- with .Values.ingress.tls }}
   tls:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    - hosts:
+      - {{ include "coreweave.externalDnsName" . }}
+      secretName: {{ include "coreweave.certSecretName" . }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ include "coreweave.externalDnsName" . }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path | quote }}
-            {{- if $apiIsStable }}
-            pathType: {{ default "Prefix" .pathType }}
-            {{- end }}
+          - path: /
+            pathType: Prefix
             backend:
-              {{- if $apiIsStable }}
               service:
                 name: {{ include "authentik.names.fullname" $ }}
                 port:
                   name: {{ $.Values.service.name }}
-              {{- else }}
-              serviceName: {{ include "authentik.names.fullname" $ }}
-              servicePort: {{ $.Values.service.port }}
-              {{- end }}
-          {{- end }}
-    {{- end }}
 {{- end }}
