@@ -91,3 +91,119 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "authentik.names.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+{{/*
+    Create Hostname helper -- Coreweave Use Only
+*/}}
+{{- define "coreweave.externalDnsName" -}}
+{{- if .Values.fullnameOverride -}}
+{{ default (printf "%s.%s.%s.ingress.coreweave.cloud" .Values.fullnameOverride .Release.Namespace (.Values.region | lower | toString)) .Values.customExternalDnsName }}
+{{- else -}}
+{{ default (printf "%s.%s.%s.ingress.coreweave.cloud" .Release.Name .Release.Namespace ((default "ORD1" .Values.region) | lower | toString)) .Values.customExternalDnsName }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+    Create DRY Helpers
+*/}}
+{{- define "coreweave.tolerations" -}}
+{{- if .Values.tolerations }}
+{{- with .Values.tolerations }}
+tolerations:
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- else }}
+tolerations:
+  - key: is_cpu_compute
+    operator: Exists
+{{- end }}
+{{- end -}}
+{{- define "coreweave.affinity" -}}
+{{- if .Values.affinity }}
+{{- with .Values.affinity }}
+affinity:
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- else }}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: topology.kubernetes.io/region
+              operator: In
+              values:
+                - {{ .Values.region }}
+            - key: node.coreweave.cloud/class
+              operator: In
+              values:
+                - cpu
+{{- end }}
+{{- end -}}
+{{- define "coreweave.certSecretName" -}}
+{{printf "%s-tls-cert" .Release.Name }}
+{{- end -}}
+{{- define "coreweave.envValueFrom" -}}
+envValueFrom:
+  AUTHENTIK_POSTGRESQL__PASSWORD:
+    secretKeyRef:
+      name: {{ .Release.Name }}-postgresql
+      key: postgresql-password
+  AUTHENTIK_SECRET_KEY:
+    secretKeyRef:
+      name: {{ .Release.Name }}-keys
+      key: secret_key
+  AUTHENTIK_BOOTSTRAP_PASSWORD:
+    secretKeyRef:
+      name: {{ .Release.Name }}-keys
+      key: akadmin_password
+  AUTHENTIK_BOOTSTRAP_TOKEN:
+    secretKeyRef:
+      name: {{ .Release.Name }}-keys
+      key: bootstrap_token
+  AUTHENTIK_BOOTSTRAP_EMAIL:
+    secretKeyRef:
+      name: {{ .Release.Name }}-keys
+      key: admin_email
+  AUTHENTIK_LDAP_SVC_KEY:
+    secretKeyRef:
+      name: {{ .Release.Name }}-keys
+      key: ldapsvc_password
+{{- if .Values.envValueFrom }}
+{{- with .Values.envValueFrom }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "coreweave.blueprints" -}}
+blueprints:
+  - {{ .Release.Name }}-ldap-provider-blueprint
+  - {{ .Release.Name }}-users-blueprint
+  - {{ .Release.Name }}-groups-blueprint
+  - {{ .Release.Name }}-ldap-federation-blueprint
+  - {{ .Release.Name }}-google-ldap-mapping-blueprint
+  - {{ .Release.Name }}-okta-ldap-mapping-blueprint
+{{- if .Values.blueprints }}
+{{- with .Values.blueprints }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "coreweave.ingressAnnotations" -}}
+annotations:
+  {{- if .Values.customExternalDnsName }}
+  kubernetes.io/ingress.class: {{ .Values.customIngressControllerClassAnnotation }}
+  {{- end }}
+  cert-manager.io/cluster-issuer: letsencrypt-prod
+  traefik.ingress.kubernetes.io/redirect-entry-point: https
+  ingress.kubernetes.io/force-ssl-redirect: "true"
+  ingress.kubernetes.io/ssl-redirect: "true"
+  kubernetes.io/ingress.allow-http: "false"
+{{- if .Values.ingress.annotations }}
+{{- with .Values.ingress.annotations }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end -}}

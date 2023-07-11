@@ -1,3 +1,72 @@
+# -- Datacenter region
+region: ORD1
+
+# -- Superuser email address
+adminEmail: ""
+
+# -- Custom CoreWeave Blueprints
+customBlueprints: {}
+# -- Create an LDAP outpost
+#  ldapProvider:
+#    domain: "coreweave.cloud"
+#    replicas: 1
+#    serviceType: ClusterIP
+#    logLevel: info
+#    config:
+#      foo: bar
+# -- Create an LDAP Federation connection
+#  federation:
+#    ldap:
+#    - name: google-secure-ldap
+#      client_certificate: my-cert-name # Requires cert mounted in volume/volumeMounts
+#      baseDN: dc=domain,dc=com
+#      bindCN: cn=BindCN
+#      bindPassword: !Env bindCN # Mount secret from envValueFrom, or use plain text
+#      startTLS: true
+#      sni: true
+#      type: googleLDAP
+#      serverUri: ldap://ldap.google.com
+# -- Add multiple LDAP federation connections
+#    - name: openldap
+#      peer_certificate: my-cert-name # Optional, requires cert mounted in volume/volumeMounts
+#      baseDN: dc=domain,dc=com
+#      bindCN: cn=BindCN
+#      bindPassword: !Env bindCN # Mount secret from envValueFrom, or use plain text
+#      userObjectFilter: (objectClass=posixAccount)
+#      groupMemberAttribute: memberOf
+#      passwordWriteback: true # Optional, defaults to false
+#      parentGroup: open-ldap-users # Optional, defaults to root
+#      sni: true
+#      type: openLDAP
+#      serverUri: ldap://openldap
+# -- Create user accounts
+#  users:
+#  - name: "John Smith"
+#    userName: "jsmith"
+#    email: "jsmith@foo.com"
+#    attributes:
+#      sshPublicKey: "ssh-ed25519 my-ssh-key"
+#      homeDirectory: "/home/jsmith"
+#    groups:
+#      - basic-user
+#  - name: "Jane Doe"
+#    userName: "jdoe"
+#    email: "jdoe@bar.com"
+#    attributes:
+#      homeDirectory: "/home/jdoe"
+#      loginShell: "/bin/sh"
+#    groups:
+#      - basic-user
+#      - basic-admin
+# -- Create groups
+#  groups:
+#    - name: basic-user
+#      attributes:
+#        foo: bar
+#    - name: basic-admin
+#      attributes:
+#        isAdmin: true
+
 # -- Server replicas
 replicas: 1
 # -- Custom priority class for different treatment by the scheduler
@@ -32,16 +101,9 @@ initContainers: {}
 additionalContainers: {}
 
 ingress:
-  enabled: false
-  ingressClassName: ""
+  enabled: true
   annotations: {}
   labels: {}
-  hosts:
-    - host: authentik.domain.tld
-      paths:
-        - path: "/"
-          pathType: Prefix
-  tls: []
 
 # -- Annotations to add to the server and worker deployments
 annotations: {}
@@ -138,6 +200,22 @@ volumes: []
 
 volumeMounts: []
 
+# -- Add client or peer certificate for LDAP federation
+# volumes:
+# - name: ldap-certificate
+#   secret:
+#     secretName: ldap-certificate
+#     defaultMode: 0666
+#     items:
+#     - key: tls.crt
+#       path: fullchain.pem
+#     - key: tls.key
+#       path: privkey.pem
+# volumeMounts:
+# - name: ldap-certificate
+#   mountPath: /certs/ldap-certificate
+#   readOnly: true
+
 # -- affinity applied to the deployments
 affinity: {}
 
@@ -148,8 +226,20 @@ tolerations: []
 nodeSelector: {}
 
 resources:
-  server: {}
-  worker: {}
+  server:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  worker:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
 
 autoscaling:
   server:
@@ -230,7 +320,7 @@ geoip:
   containerSecurityContext: {}
 postgresql:
   # -- enable the bundled bitnami postgresql chart
-  enabled: false
+  enabled: true
   postgresqlMaxConnections: 500
   postgresqlUsername: "authentik"
   # postgresqlPassword: ""
@@ -244,7 +334,7 @@ postgresql:
     tag: 15.4.0-debian-11-r0
 redis:
   # -- enable the bundled bitnami redis chart
-  enabled: false
+  enabled: true
   architecture: standalone
   auth:
     enabled: false

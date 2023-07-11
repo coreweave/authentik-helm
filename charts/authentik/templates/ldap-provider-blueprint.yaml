@@ -1,0 +1,100 @@
+apiVersion: v1
+data:
+  ldap-provider-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values).customBlueprints).ldapProvider | not }}"
+      name: Custom Blueprints - LDAP Provider
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Default - Authentication flow
+        required: true
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Default - Password change flow
+        required: false
+    - attrs:
+        attributes: {}
+        name: "LDAP Search"
+      conditions: []
+      id: ldap_search_group
+      identifiers:
+        name: "LDAP Search"
+      model: authentik_core.group
+      state: present
+    - attrs:
+        attributes: {}
+        groups:
+        - !KeyOf ldap_search_group
+        is_active: true
+        path: users
+        username: ldapsvc
+        name: "LDAP Service Account"
+        password: !Env [AUTHENTIK_LDAP_SVC_KEY, changeme]
+      conditions: []
+      id: ldap_search_user
+      identifiers:
+        username: ldapsvc
+      model: authentik_core.user
+      state: present
+    - attrs:
+        authorization_flow: !Find [authentik_flows.flow, [slug, "default-authentication-flow"]]
+        base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
+        bind_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).bindMode }}
+        gid_start_number: {{ default "4000" (((.Values).customBlueprints).ldapProvider).gidStart }}
+        mfa_support: false
+        name: LDAP
+        search_group: !KeyOf ldap_search_group
+        search_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).searchMode }}
+        tls_server_name: {{ default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain }}
+        uid_start_number: {{ default "2000" (((.Values).customBlueprints).ldapProvider).uidStart }}
+      conditions: []
+      id: ldap_provider
+      identifiers:
+        name: ldap_provider
+      model: authentik_providers_ldap.ldapprovider
+      state: present
+    - attrs:
+        name: LDAP
+        policy_engine_mode: any
+        provider: !KeyOf ldap_provider
+        slug: ldap
+      conditions: []
+      id: ldap_application
+      identifiers:
+        name: ldap_application
+      model: authentik_core.application
+      state: present
+    - attrs:
+        config:
+          authentik_host: http://{{ include "authentik.names.fullname" . }}
+          authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
+          kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
+          kubernetes_namespace: {{ $.Release.Namespace }}
+          kubernetes_replicas: {{ default "1" (((.Values).customBlueprints).ldapProvider).replicas }}
+          kubernetes_service_type: {{ default "ClusterIP" (((.Values).customBlueprints).ldapProvider).serviceType }}
+          log_level: {{ default "info" (((.Values).customBlueprints).ldapProvider).logLevel }}
+          object_naming_template: {{ $.Release.Name }}-outpost-%(name)s
+          {{- if (((.Values).customBlueprints).ldapProvider).config }}{{- toYaml (((.Values).customBlueprints).ldapProvider).config | nindent 10 }}{{ end }}
+        name: ldap
+        providers:
+        - !KeyOf ldap_provider
+        service_connection: !Find [authentik_outposts.kubernetesserviceconnection, [name, "Local Kubernetes Cluster"]]
+        type: ldap
+      conditions: []
+      id: ldap-outpost
+      identifiers:
+        name: ldap-outpost
+      model: authentik_outposts.outpost
+      state: present
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ldap-provider-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}
