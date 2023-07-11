@@ -46,14 +46,14 @@ data:
     - attrs:
         authorization_flow: !Find [authentik_flows.flow, [slug, "default-authentication-flow"]]
         base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
-        bind_mode: cached
-        gid_start_number: 4000
-        mfa_support: true
+        bind_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).bindMode }}
+        gid_start_number: {{ default "4000" (((.Values).customBlueprints).ldapProvider).gidStart }}
+        mfa_support: false
         name: LDAP
         search_group: !KeyOf ldap_search_group
-        search_mode: cached
+        search_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).searchMode }}
         tls_server_name: {{ default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain }}
-        uid_start_number: 2000
+        uid_start_number: {{ default "2000" (((.Values).customBlueprints).ldapProvider).uidStart }}
       conditions: []
       id: ldap_provider
       identifiers:
