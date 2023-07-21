@@ -7,4 +7,4 @@ serviceAccountSecret:
   enabled: true
 
 clusterRole:
-  enabled: true
+  enabled: false

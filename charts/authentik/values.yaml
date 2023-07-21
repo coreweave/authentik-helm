@@ -332,6 +332,8 @@ serviceAccount:
     enabled: false
   fullnameOverride: authentik
   nameOverride: authentik
+  clusterRole:
+    enabled: false
 
 prometheus:
   serviceMonitor:
