@@ -138,6 +138,28 @@ affinity:
               operator: In
               values:
                 - cpu
+            - key: node.coreweave.cloud/cpu
+              operator: In
+              values:
+                - intel-xeon-v4
+                - amd-epyc-rome
+                - amd-epyc-milan
+                - intel-xeon-scalable
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/managed-by
+                operator: In
+                values:
+                  - goauthentik.io
+              - key: app.kubernetes.io/instance
+                operator: In
+                values:
+                  - {{ .Release.Name }}
+          topologyKey: kubernetes.io/hostname
+        weight: 100
 {{- end }}
 {{- end -}}
 {{- define "coreweave.certSecretName" -}}

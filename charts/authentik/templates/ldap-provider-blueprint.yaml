@@ -76,6 +76,24 @@ data:
           authentik_host: http://{{ include "authentik.names.fullname" . }}
           authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
           kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
+          kubernetes_json_patches:
+            deployment:
+              - op: add
+                path: /spec/template/spec/containers/0/resources
+                value:
+                  {{- with index $.Values.resources.worker }}
+                  {{- toYaml . | nindent 18 }}{{ end }}
+              - op: move
+                from: /spec/template/spec/containers
+                path: /spec/temp
+              - op: add
+                path: /spec/template/spec
+                value:
+                {{- include "coreweave.affinity" . | indent 18 }}
+                {{- include "coreweave.tolerations" . | indent 18 }}
+              - op: move
+                path: /spec/template/spec/containers
+                from: /spec/temp
           kubernetes_namespace: {{ $.Release.Namespace }}
           kubernetes_replicas: {{ default "1" (((.Values).customBlueprints).ldapProvider).replicas }}
           kubernetes_service_type: {{ default "ClusterIP" (((.Values).customBlueprints).ldapProvider).serviceType }}
