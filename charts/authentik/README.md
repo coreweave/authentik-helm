@@ -9,6 +9,8 @@
 ![Version: 2023.6.3](https://img.shields.io/badge/Version-2023.6.3-informational?style=for-the-badge)
 ![AppVersion: 2023.6.1](https://img.shields.io/badge/AppVersion-2023.6.1-informational?style=for-the-badge)
 
+
+
 authentik is an open-source Identity Provider focused on flexibility and versatility
 
 **Homepage:** <https://goauthentik.io>
@@ -16,28 +18,46 @@ authentik is an open-source Identity Provider focused on flexibility and versati
 ## Example values to get started:
 
 ```yaml
-authentik:
-  secret_key: "PleaseGenerateA50CharKey"
-  # This sends anonymous usage-data, stack traces on errors and
-  # performance data to sentry.beryju.org, and is fully opt-in
-  error_reporting:
-    enabled: true
-  postgresql:
-    password: "ThisIsNotASecurePassword"
+region: LGA1
+adminEmail: foo@bar.com
 
 ingress:
   enabled: true
-  hosts:
-    - host: authentik.domain.tld
-      paths:
-        - path: "/"
-          pathType: Prefix
+
+authentik:
+  error_reporting:
+    enabled: false
+    environment: k8s
+    send_pii: false
 
 postgresql:
   enabled: true
-  postgresqlPassword: "ThisIsNotASecurePassword"
 redis:
   enabled: true
+
+serviceAccount:
+  create: true
+  serviceAccountSecret:
+    enabled: false
+  clusterRole:
+    enabled: false
+
+replicas: 1
+resources:
+  server:
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+  worker:
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+    requests:
+      cpu: 2000m
+      memory: 4Gi
 ```
 
 ## Maintainers
@@ -45,6 +65,7 @@ redis:
 | Name | Email | Url |
 | ---- | ------ | --- |
 | authentik Team | <hello@goauthentik.io> | <https://goauthentik.io> |
+| CoreWeave Cloud | <support@coreweave.com> | <https://coreweave.com> |
 
 ## Source Code
 
@@ -55,7 +76,7 @@ redis:
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.goauthentik.io | serviceAccount(authentik-remote-cluster) | 1.1.2 |
+| https://charts.goauthentik.io | serviceAccount(authentik-remote-cluster) | 1.2.2 |
 | https://charts.goauthentik.io | postgresql | 10.16.2 |
 | https://charts.goauthentik.io | redis | 15.7.6 |
 
@@ -64,6 +85,7 @@ redis:
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | additionalContainers | object | `{}` | Specify any additional containers here as dictionary items. Each additional container should have its own key. Helm templates can be used. |
+| adminEmail | string | `""` | Superuser email address |
 | affinity | object | `{}` | affinity applied to the deployments |
 | annotations | object | `{}` | Annotations to add to the server and worker deployments |
 | authentik.email.from | string | `""` | Email from address, can either be in the format "foo@bar.baz" or "authentik <foo@bar.baz>" |
@@ -98,6 +120,7 @@ redis:
 | autoscaling.worker.targetCPUUtilizationPercentage | int | `80` |  |
 | blueprints | list | `[]` | List of config maps to mount blueprints from. Only keys in the configmap ending with ".yaml" wil be discovered and applied |
 | containerSecurityContext | object | `{}` | server containerSecurityContext |
+| customBlueprints | object | `{}` | Custom CoreWeave Blueprints |
 | env | object | `{}` | see configuration options at https://goauthentik.io/docs/installation/configuration/ |
 | envFrom | list | `[]` |  |
 | envValueFrom | object | `{}` |  |
@@ -114,13 +137,8 @@ redis:
 | image.repository | string | `"ghcr.io/goauthentik/server"` |  |
 | image.tag | string | `"2023.6.1"` |  |
 | ingress.annotations | object | `{}` |  |
-| ingress.enabled | bool | `false` |  |
-| ingress.hosts[0].host | string | `"authentik.domain.tld"` |  |
-| ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| ingress.ingressClassName | string | `""` |  |
+| ingress.enabled | bool | `true` |  |
 | ingress.labels | object | `{}` |  |
-| ingress.tls | list | `[]` |  |
 | initContainers | object | `{}` | Specify any initContainers here as dictionary items. Each initContainer should have its own key. The dictionary item key will determine the order. Helm templates can be used |
 | livenessProbe.enabled | bool | `true` | enables or disables the livenessProbe |
 | livenessProbe.httpGet.path | string | `"/-/health/live/"` | liveness probe url path |
@@ -129,7 +147,7 @@ redis:
 | livenessProbe.periodSeconds | int | `10` |  |
 | nodeSelector | object | `{}` | nodeSelector applied to the deployments |
 | podAnnotations | object | `{}` | Annotations to add to the server and worker pods |
-| postgresql.enabled | bool | `false` | enable the bundled bitnami postgresql chart |
+| postgresql.enabled | bool | `true` | enable the bundled bitnami postgresql chart |
 | postgresql.image.tag | string | `"11.19.0-debian-11-r4"` |  |
 | postgresql.postgresqlDatabase | string | `"authentik"` |  |
 | postgresql.postgresqlMaxConnections | int | `500` |  |
@@ -147,11 +165,18 @@ redis:
 | readinessProbe.periodSeconds | int | `10` |  |
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
-| redis.enabled | bool | `false` | enable the bundled bitnami redis chart |
+| redis.enabled | bool | `true` | enable the bundled bitnami redis chart |
 | redis.image.tag | string | `"6.2.10-debian-11-r13"` |  |
+| region | string | `"ORD1"` | Datacenter region |
 | replicas | int | `1` | Server replicas |
-| resources.server | object | `{}` |  |
-| resources.worker | object | `{}` |  |
+| resources.server.limits.cpu | string | `"4000m"` |  |
+| resources.server.limits.memory | string | `"8Gi"` |  |
+| resources.server.requests.cpu | string | `"2000m"` |  |
+| resources.server.requests.memory | string | `"4Gi"` |  |
+| resources.worker.limits.cpu | string | `"4000m"` |  |
+| resources.worker.limits.memory | string | `"8Gi"` |  |
+| resources.worker.requests.cpu | string | `"2000m"` |  |
+| resources.worker.requests.memory | string | `"4Gi"` |  |
 | securityContext | object | `{}` | server securityContext |
 | service.annotations | object | `{}` |  |
 | service.enabled | bool | `true` | Service that is created to access authentik |
@@ -161,7 +186,10 @@ redis:
 | service.protocol | string | `"TCP"` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.clusterRole.enabled | bool | `false` |  |
 | serviceAccount.create | bool | `true` | Service account is needed for managed outposts |
+| serviceAccount.fullnameOverride | string | `"authentik"` |  |
+| serviceAccount.nameOverride | string | `"authentik"` |  |
 | serviceAccount.serviceAccountSecret.enabled | bool | `false` | As we use the authentik-remote-cluster chart as subchart, and that chart creates a service account secret by default which we don't need here, disable its creation |
 | startupProbe.enabled | bool | `true` | enables or disables the livenessProbe |
 | startupProbe.failureThreshold | int | `60` |  |
