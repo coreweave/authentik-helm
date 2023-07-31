@@ -36,7 +36,6 @@ Helm push:
     - apk add git
     - helm plugin install https://github.com/chartmuseum/helm-push.git
     - cd charts
-    - HELM_BETA_REPO_PASS_DECODED="$(echo $HELM_BETA_REPO_PASS | base64 -d)"
     - helm repo add helm_repo $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASS
     - helm repo add authentik https://charts.goauthentik.io && helm repo update
     - for x in $(find . -maxdepth 1 -mindepth 1 -type d -not -path "./authentik"); do helm package $x --destination ./authentik/charts; done
