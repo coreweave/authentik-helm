@@ -8,6 +8,8 @@
 ![Version: 1.2.2](https://img.shields.io/badge/Version-1.2.2-informational?style=for-the-badge)
 ![AppVersion: 2023.6.0](https://img.shields.io/badge/AppVersion-2023.6.0-informational?style=for-the-badge)
 
+
+
 RBAC required for a remote cluster to be connected to authentik.
 
 **Homepage:** <https://goauthentik.io>
@@ -23,12 +25,14 @@ RBAC required for a remote cluster to be connected to authentik.
 * <https://goauthentik.io/docs/>
 * <https://github.com/goauthentik/authentik>
 
+
+
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | annotations | object | `{}` |  |
-| clusterRole.enabled | bool | `true` |  |
+| clusterRole.enabled | bool | `false` |  |
 | fullnameOverride | string | `""` |  |
 | nameOverride | string | `""` |  |
 | serviceAccountSecret.enabled | bool | `true` |  |
