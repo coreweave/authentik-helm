@@ -45,6 +45,9 @@ spec:
   publishNotReadyAddresses: {{ . }}
   {{- end }}
   ports:
+    - name: https
+      port: 443
+      targetPort: 9443
     - port: 9300
       name: http-metrics
       protocol: TCP
