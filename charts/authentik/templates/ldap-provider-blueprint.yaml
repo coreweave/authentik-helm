@@ -76,6 +76,7 @@ data:
           authentik_host: http://{{ include "authentik.names.fullname" . }}
           authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
           kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
+          {{- if not ((((.Values).customBlueprints).ldapProvider).config).kubernetes_json_patches }}
           kubernetes_json_patches:
             deployment:
               - op: add
@@ -94,6 +95,7 @@ data:
               - op: move
                 path: /spec/template/spec/containers
                 from: /spec/temp
+          {{- end }}
           kubernetes_namespace: {{ $.Release.Namespace }}
           kubernetes_replicas: {{ default "1" (((.Values).customBlueprints).ldapProvider).replicas }}
           kubernetes_service_type: {{ default "ClusterIP" (((.Values).customBlueprints).ldapProvider).serviceType }}
