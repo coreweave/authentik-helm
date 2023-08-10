@@ -24,7 +24,9 @@ customBlueprints: {}
 #      bindPassword: !Env bindCN # Mount secret from envValueFrom, or use plain text
 #      startTLS: true
 #      sni: true
-#      type: googleLDAP
+#      type: googleLDAP # Use pre-defined property mappings
+#      propertyMappingsUser: [] # Define user property mappings by name
+#      propertyMappingsGroup: [] # Define group property mappings by name
 #      serverUri: ldap://ldap.google.com
 # -- Add multiple LDAP federation connections
 #    - name: openldap
