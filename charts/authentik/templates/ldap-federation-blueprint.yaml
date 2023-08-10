@@ -56,7 +56,16 @@ data:
         sync_groups: {{ default "true" .syncGroups }}
         {{- if .parentGroup }}
         sync_parent_group: !Find [authentik_core.group, [name, {{ .parentGroup }}]]{{ end }}
-        {{- if eq "googleLDAP" .type  }}
+        {{- if and .propertyMappingsUser .propertyMappingsGroup  }}
+        property_mappings:
+          {{- range .propertyMappingsUser }}
+          - !Find [authentik_sources_ldap.ldappropertymapping, [name, "{{ . }}"]]
+          {{- end}}
+        property_mappings_group:
+          {{- range .propertyMappingsGroup }}
+          - !Find [authentik_sources_ldap.ldappropertymapping, [name, "{{ . }}"]]
+          {{- end}}
+        {{- else if eq "googleLDAP" .type  }}
         property_mappings: !Enumerate [
             ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: departmentNumber", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: employeeNumber", "Google Secure LDAP Mapping: employeeType", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: givenName", "Google Secure LDAP Mapping: googleUid", "Google Secure LDAP Mapping: homeDirectory", "Google Secure LDAP Mapping: jpegPhoto", "Google Secure LDAP Mapping: loginShell", "Google Secure LDAP Mapping: mail", "Google Secure LDAP Mapping: memberOf", "Google Secure LDAP Mapping: objectSid", "Google Secure LDAP Mapping: physicalDeliveryOfficeName", "Google Secure LDAP Mapping: posixUid", "Google Secure LDAP Mapping: sn", "Google Secure LDAP Mapping: sshPublicKey", "Google Secure LDAP Mapping: title", "Google Secure LDAP Mapping: uid", "Google Secure LDAP Mapping: uidNumber"],
             SEQ,
