@@ -1,8 +1,3 @@
-{{/*
-Copyright VMware, Inc.
-SPDX-License-Identifier: APACHE-2.0
-*/}}
-
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Print instructions to get a secret value.
@@ -11,7 +6,7 @@ Usage:
 */}}
 {{- define "common.utils.secret.getvalue" -}}
 {{- $varname := include "common.utils.fieldToEnvVar" . -}}
-export {{ $varname }}=$(kubectl get secret --namespace {{ include "common.names.namespace" .context | quote }} {{ .secret }} -o jsonpath="{.data.{{ .field }}}" | base64 -d)
+export {{ $varname }}=$(kubectl get secret --namespace {{ .context.Release.Namespace | quote }} {{ .secret }} -o jsonpath="{.data.{{ .field }}}" | base64 --decode)
 {{- end -}}
 
 {{/*
