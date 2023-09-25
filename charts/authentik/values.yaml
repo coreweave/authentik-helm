@@ -68,6 +68,16 @@ customBlueprints: {}
 #    - name: basic-admin
 #      attributes:
 #        isAdmin: true
+# -- Create an OIDC provider(s)
+#  oidcProvider:
+#    name: oidc-k8s
+#    clientType: confidential
+#    accessCodeValidity: "minutes=1"
+#    accessTokenValidity: "minutes=5"
+#    refreshTokenValidity: "days=30"
+#    redirectUris:
+#      - http://localhost:8080
+#      - https://login.tenant-org-name.ord1.ingress.coreweave.cloud
 
 # -- Server replicas
 replicas: 1

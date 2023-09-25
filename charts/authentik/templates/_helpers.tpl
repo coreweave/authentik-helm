@@ -191,6 +191,16 @@ envValueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: ldapsvc_password
+  {{- range ((.Values).customBlueprints).oidcProvider }}
+  {{ printf "oidc-%s-client-id" .name }}:
+    secretKeyRef:
+      name: {{ $.Release.Name }}-keys
+      key: {{ printf "oidc-%s-client-id" .name }}
+  {{ printf "oidc-%s-client-secret" .name }}:
+    secretKeyRef:
+      name: {{ $.Release.Name }}-keys
+      key: {{ printf "oidc-%s-client-secret" .name }}
+  {{- end }}
   {{- range ((.Values).customBlueprints).users }}
   {{ printf "%s_password" .userName }}:
     secretKeyRef:
@@ -212,6 +222,7 @@ blueprints:
   - {{ .Release.Name }}-ldap-federation-blueprint
   - {{ .Release.Name }}-google-ldap-mapping-blueprint
   - {{ .Release.Name }}-okta-ldap-mapping-blueprint
+  - {{ .Release.Name }}-oidc-provider-blueprint
 {{- if .Values.blueprints }}
 {{- with .Values.blueprints }}
 {{- toYaml . | nindent 2 }}
