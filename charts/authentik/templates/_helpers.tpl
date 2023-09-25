@@ -191,6 +191,12 @@ envValueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: ldapsvc_password
+  {{- range ((.Values).customBlueprints).users }}
+  {{ printf "%s_password" .userName }}:
+    secretKeyRef:
+      name: {{ $.Release.Name }}-keys
+      key: {{ printf "%s_password" .userName }}
+  {{- end }}
 {{- if .Values.envValueFrom }}
 {{- with .Values.envValueFrom }}
 {{- toYaml . | nindent 2 }}

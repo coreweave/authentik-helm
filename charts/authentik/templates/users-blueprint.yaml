@@ -38,8 +38,7 @@ data:
         is_active: {{ default "true" .isActive }}
         {{- if .email }}
         email: {{ .email }}{{- end }}
-        {{- if .password }}
-        password: {{ .password }}{{- end }}
+        password: !Env [{{ printf "%s_password" .userName }}, changeme]
       conditions: []
       id: {{ .userName }}
       identifiers:
