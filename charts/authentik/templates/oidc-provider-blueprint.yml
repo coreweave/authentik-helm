@@ -57,7 +57,7 @@ data:
       identifiers:
         name: {{ printf "oidc-provider-%s" .name }}
       model: authentik_providers_oauth2.oauth2provider
-      state: present
+      state: {{ default "present" .state }}
     - attrs:
         name: {{ printf "oidc-application-%s" .name }}
         policy_engine_mode: {{ default "any" .policyEngineMode }}
@@ -68,5 +68,5 @@ data:
       identifiers:
         name: {{ printf "oidc-application-%s" .name }}
       model: authentik_core.application
-      state: present
+      state: {{ default "present" .state }}
     {{- end }}

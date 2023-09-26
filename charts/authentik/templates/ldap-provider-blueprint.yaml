@@ -27,7 +27,7 @@ data:
       identifiers:
         name: "LDAP Search"
       model: authentik_core.group
-      state: present
+      state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         attributes: {}
         groups:
@@ -42,7 +42,7 @@ data:
       identifiers:
         username: ldapsvc
       model: authentik_core.user
-      state: present
+      state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         authorization_flow: !Find [authentik_flows.flow, [slug, "default-authentication-flow"]]
         base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
@@ -59,7 +59,7 @@ data:
       identifiers:
         name: ldap_provider
       model: authentik_providers_ldap.ldapprovider
-      state: present
+      state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         name: LDAP
         policy_engine_mode: any
@@ -70,7 +70,7 @@ data:
       identifiers:
         name: ldap_application
       model: authentik_core.application
-      state: present
+      state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         config:
           authentik_host: http://{{ include "authentik.names.fullname" . }}
@@ -112,7 +112,7 @@ data:
       identifiers:
         name: ldap-outpost
       model: authentik_outposts.outpost
-      state: present
+      state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-ldap-provider-blueprint

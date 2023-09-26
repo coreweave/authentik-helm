@@ -105,7 +105,7 @@ data:
       identifiers:
         name: {{ default "ldap-source" .name }}
       model: authentik_sources_ldap.ldapsource
-      state: present
+      state: {{ default "present" .state }}
     {{- end }}
 kind: ConfigMap
 metadata:
