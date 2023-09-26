@@ -194,17 +194,17 @@ envValueFrom:
   {{- range ((.Values).customBlueprints).oidcProvider }}
   {{ printf "oidc-%s-client-id" .name }}:
     secretKeyRef:
-      name: {{ $.Release.Name }}-keys
+      name: {{ printf "%s-oidc-%s-keys" $.Release.Name .name }}
       key: {{ printf "oidc-%s-client-id" .name }}
   {{ printf "oidc-%s-client-secret" .name }}:
     secretKeyRef:
-      name: {{ $.Release.Name }}-keys
+      name: {{ printf "%s-oidc-%s-keys" $.Release.Name .name }}
       key: {{ printf "oidc-%s-client-secret" .name }}
   {{- end }}
   {{- range ((.Values).customBlueprints).users }}
   {{ printf "%s_password" .userName }}:
     secretKeyRef:
-      name: {{ $.Release.Name }}-keys
+      name: {{ printf "%s-%s-keys"  $.Release.Name .userName }}
       key: {{ printf "%s_password" .userName }}
   {{- end }}
 {{- if .Values.envValueFrom }}
