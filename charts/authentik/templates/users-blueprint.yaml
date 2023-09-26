@@ -44,7 +44,7 @@ data:
       identifiers:
         name: {{ .name }}
       model: authentik_core.user
-      state: present
+      state: {{ default "created" .state }}
     {{- end }}
 kind: ConfigMap
 metadata:

@@ -30,7 +30,7 @@ data:
       identifiers:
         name: {{ .name }}
       model: authentik_core.group
-      state: present
+      state: {{ default "present" .state }}
     {{- end }}
 kind: ConfigMap
 metadata:
