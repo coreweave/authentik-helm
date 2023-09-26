@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-oidc-provider-blueprint
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}
+data:
+  oidc-provider-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty ((.Values).customBlueprints).oidcProvider | not }}"
+      name: Custom Blueprints - OIDC Provider
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: "Default - Authentication flow"
+        required: true
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: "Default - Provider authorization flow (implicit consent)"
+        required: true
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: "System - OAuth2 Provider - Scopes"
+        required: true
+    {{- range ((.Values).customBlueprints).oidcProvider }}
+    - attrs:
+        name: {{ printf "oidc-provider-%s" .name }}
+        authentication_flow: {{ default "!Find [authentik_flows.flow, [slug, default-authentication-flow]]" .authenticationFlow }}
+        authorization_flow: {{ default "!Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]" .authorizationFlow }}
+        property_mappings:
+        {{- if .propertyMappings }}{{- toYaml .propertyMappings | nindent 8 }}
+        {{- else }}
+        - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''openid''']]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''email''']]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''profile''']]
+        {{- end }}
+        client_type: {{ default "confidential" .clientType }}
+        client_id: !Env [{{ printf "oidc-%s-client-id" .name }}, changeme]
+        client_secret: !Env [{{ printf "oidc-%s-client-secret" .name }}, changeme]
+        access_code_validity: {{ default "minutes=1" .accessCodeValidity }}
+        access_token_validity: {{ default "minutes=5" .accessTokenValidity }}
+        refresh_token_validity: {{ default "days=30" .refreshTokenValidity }}
+        include_claims_in_id_token: {{ default "true" .includeClaimsInIdToken }}
+        signing_key: {{ default "!Find [authentik_crypto.certificatekeypair, [name, \"authentik Self-signed Certificate\"]]" .signingKey }}
+        redirect_uris: '{{ .redirectUris | join "\n" | nindent 8 }}'
+        sub_mode: {{ default "user_username" .subMode }}
+        issuer_mode: {{ default "per_provider" .issuerMode }}
+      conditions: []
+      id: {{ printf "oidc-provider-%s" .name }}
+      identifiers:
+        name: {{ printf "oidc-provider-%s" .name }}
+      model: authentik_providers_oauth2.oauth2provider
+      state: present
+    - attrs:
+        name: {{ printf "oidc-application-%s" .name }}
+        policy_engine_mode: {{ default "any" .policyEngineMode }}
+        provider: !KeyOf {{ printf "oidc-provider-%s" .name }}
+        slug: {{ printf "oidc-application-%s" .name }}
+      conditions: []
+      id: {{ printf "oidc-application-%s" .name }}
+      identifiers:
+        name: {{ printf "oidc-application-%s" .name }}
+      model: authentik_core.application
+      state: present
+    {{- end }}
