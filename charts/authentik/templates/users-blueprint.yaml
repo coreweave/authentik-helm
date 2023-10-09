@@ -19,6 +19,11 @@ data:
         identifiers:
           name: Custom Blueprints - Groups
         required: {{ empty ((.Values).customBlueprints).groups | not }}
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Custom Blueprints - User Passwords
+        required: true
     {{- range ((.Values).customBlueprints).users }}
     - attrs:
         {{- if .attributes }}
@@ -38,13 +43,12 @@ data:
         is_active: {{ default "true" .isActive }}
         {{- if .email }}
         email: {{ .email }}{{- end }}
-        password: !Env [{{ printf "%s_password" .userName }}, changeme]
       conditions: []
       id: {{ .userName }}
       identifiers:
         name: {{ .name }}
       model: authentik_core.user
-      state: {{ default "created" .state }}
+      state: {{ default "present" .state }}
     {{- end }}
 kind: ConfigMap
 metadata:

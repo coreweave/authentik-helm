@@ -54,6 +54,8 @@ customBlueprints: {}
 #  - name: "Jane Doe"
 #    userName: "jdoe"
 #    email: "jdoe@bar.com"
+#    state: present # Default, reconcile changes
+#    passwordState: created # Default, only set default password once
 #    attributes:
 #      homeDirectory: "/home/jdoe"
 #      loginShell: "/bin/sh"
@@ -66,8 +68,9 @@ customBlueprints: {}
 #      attributes:
 #        foo: bar
 #    - name: basic-admin
+#      isSuperUser: true #Authentik admin group
 #      attributes:
-#        isAdmin: true
+#        foo: bar
 # -- Create an OIDC provider(s)
 #  oidcProvider:
 #    name: oidc-k8s
