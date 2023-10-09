@@ -218,6 +218,7 @@ envValueFrom:
 blueprints:
   - {{ .Release.Name }}-ldap-provider-blueprint
   - {{ .Release.Name }}-users-blueprint
+  - {{ .Release.Name }}-users-passwords-blueprint
   - {{ .Release.Name }}-groups-blueprint
   - {{ .Release.Name }}-ldap-federation-blueprint
   - {{ .Release.Name }}-google-ldap-mapping-blueprint
