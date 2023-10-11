@@ -255,15 +255,15 @@ nodeSelector: {}
 resources:
   server:
     requests:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 1000m
+      memory: 1Gi
     limits:
       cpu: 4000m
       memory: 8Gi
   worker:
     requests:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 1000m
+      memory: 1Gi
     limits:
       cpu: 4000m
       memory: 8Gi
@@ -389,6 +389,14 @@ postgresql:
   #     - ReadWriteOnce
   image:
     tag: 15.4.0-debian-11-r0
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
 redis:
   # -- enable the bundled bitnami redis chart
   enabled: true
@@ -397,3 +405,11 @@ redis:
     enabled: false
   image:
     tag: 6.2.10-debian-11-r13
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+

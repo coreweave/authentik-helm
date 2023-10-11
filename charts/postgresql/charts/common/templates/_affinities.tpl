@@ -1,7 +1,7 @@
 {{/* vim: set filetype=mustache: */}}
 
 {{/*
-Return a soft nodeAffinity definition 
+Return a soft nodeAffinity definition
 {{ include "common.affinities.nodes.soft" (dict "key" "FOO" "values" (list "BAR" "BAZ")) -}}
 */}}
 {{- define "common.affinities.nodes.soft" -}}
@@ -46,10 +46,29 @@ Return a nodeAffinity definition
 {{- end -}}
 
 {{/*
-Return a soft podAffinity/podAntiAffinity definition
+Return a soft podAffinity definition
 {{ include "common.affinities.pods.soft" (dict "component" "FOO" "extraMatchLabels" .Values.extraMatchLabels "context" $) -}}
 */}}
 {{- define "common.affinities.pods.soft" -}}
+{{- $component := default "" .component -}}
+{{- $extraMatchLabels := default (dict) .extraMatchLabels -}}
+preferredDuringSchedulingIgnoredDuringExecution:
+  - podAffinityTerm:
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/instance: {{ .context.Release.Name }}
+      namespaces:
+        - {{ .context.Release.Namespace | quote }}
+      topologyKey: topology.kubernetes.io/region
+    weight: 100
+{{- end -}}
+
+
+{{/*
+Return a soft podAntiAffinity definition
+{{ include "common.affinities.antipods.soft" (dict "component" "FOO" "extraMatchLabels" .Values.extraMatchLabels "context" $) -}}
+*/}}
+{{- define "common.affinities.antipods.soft" -}}
 {{- $component := default "" .component -}}
 {{- $extraMatchLabels := default (dict) .extraMatchLabels -}}
 preferredDuringSchedulingIgnoredDuringExecution:
@@ -69,10 +88,27 @@ preferredDuringSchedulingIgnoredDuringExecution:
 {{- end -}}
 
 {{/*
-Return a hard podAffinity/podAntiAffinity definition
+Return a hard podAffinity definition
 {{ include "common.affinities.pods.hard" (dict "component" "FOO" "extraMatchLabels" .Values.extraMatchLabels "context" $) -}}
 */}}
 {{- define "common.affinities.pods.hard" -}}
+{{- $component := default "" .component -}}
+{{- $extraMatchLabels := default (dict) .extraMatchLabels -}}
+requiredDuringSchedulingIgnoredDuringExecution:
+  - labelSelector:
+      matchLabels:
+        app.kubernetes.io/instance: {{ .context.Release.Name }}
+    namespaces:
+      - {{ .context.Release.Namespace | quote }}
+    topologyKey: topology.kubernetes.io/region
+{{- end -}}
+
+
+{{/*
+Return a hard podAntiAffinity definition
+{{ include "common.affinities.antipods.hard" (dict "component" "FOO" "extraMatchLabels" .Values.extraMatchLabels "context" $) -}}
+*/}}
+{{- define "common.affinities.antipods.hard" -}}
 {{- $component := default "" .component -}}
 {{- $extraMatchLabels := default (dict) .extraMatchLabels -}}
 requiredDuringSchedulingIgnoredDuringExecution:
@@ -90,7 +126,7 @@ requiredDuringSchedulingIgnoredDuringExecution:
 {{- end -}}
 
 {{/*
-Return a podAffinity/podAntiAffinity definition
+Return a podAffinity definition
 {{ include "common.affinities.pods" (dict "type" "soft" "key" "FOO" "values" (list "BAR" "BAZ")) -}}
 */}}
 {{- define "common.affinities.pods" -}}
@@ -98,5 +134,18 @@ Return a podAffinity/podAntiAffinity definition
     {{- include "common.affinities.pods.soft" . -}}
   {{- else if eq .type "hard" }}
     {{- include "common.affinities.pods.hard" . -}}
+  {{- end -}}
+{{- end -}}
+
+
+{{/*
+Return a podAntiAffinity definition
+{{ include "common.affinities.antipods" (dict "type" "soft" "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+*/}}
+{{- define "common.affinities.antipods" -}}
+  {{- if eq .type "soft" }}
+    {{- include "common.affinities.antipods.soft" . -}}
+  {{- else if eq .type "hard" }}
+    {{- include "common.affinities.antipods.hard" . -}}
   {{- end -}}
 {{- end -}}
