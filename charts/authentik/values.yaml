@@ -28,6 +28,9 @@ customBlueprints: {}
 #      propertyMappingsUser: [] # Define user property mappings by name
 #      propertyMappingsGroup: [] # Define group property mappings by name
 #      serverUri: ldap://ldap.google.com
+#      syncJob: # Add a cronjob to increase sync frequency
+#        enabled: true
+#        cronSchedule: "*/10 * * * *"
 # -- Add multiple LDAP federation connections
 #    - name: openldap
 #      peer_certificate: my-cert-name # Optional, requires cert mounted in volume/volumeMounts
