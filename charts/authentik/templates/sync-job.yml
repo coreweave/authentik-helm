@@ -1,0 +1,44 @@
+{{- range ((.Values.customBlueprints).federation).ldap }}
+{{- if (.syncJob).enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name }}-{{ default "ldap-source" .name }}-sync
+spec:
+  concurrencyPolicy: {{ default "Replace" .concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ default "5" .failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+        spec:
+          containers:
+          - args:
+            - -k
+            - -X
+            - PATCH
+            - --url
+            - https:/{{ printf "%s-%s" (include "authentik.names.fullname" $) "server" }}/api/v3/sources/ldap/{{ .name }}/
+            - -H
+            - 'accept: application/json'
+            - -H
+            - 'authorization: Bearer $(AUTHENTIK_BOOTSTRAP_TOKEN)'
+            command:
+            - curl
+            env:
+            - name: AUTHENTIK_BOOTSTRAP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: bootstrap_token
+                  name: {{ $.Release.Name }}-keys
+            image: {{ printf "curlimages/curl:%s" (default "8.5.0" $.Values.syncImageTag) }}
+            name: {{ $.Release.Name }}-{{ default "ldap-source" .name }}-sync
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: {{ default "5" .terminationGracePeriodSeconds }}
+      ttlSecondsAfterFinished: {{ default "3600" .ttlSecondsAfterFinished }}
+  schedule: '{{ default "*/10 * * * *" .cronSchedule}}'
+  successfulJobsHistoryLimit: {{ default "5" .successfulJobsHistoryLimit }}
+  suspend: false
+{{- end }}
+{{- end }}
