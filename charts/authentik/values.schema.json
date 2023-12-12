@@ -9,7 +9,7 @@
         "type": "string",
         "enum": [
           "ORD1",
-          "EWR1",
+          "RNO2",
           "LAS1",
           "LGA1"
         ],
