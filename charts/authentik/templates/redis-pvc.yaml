@@ -13,5 +13,9 @@ spec:
   resources:
     requests:
       storage: {{ default "8Gi" ((.Values.redis).persistence).requests }}
+  {{- if ((.Values.redis).persistence).storageClass }}
+  storageClassName: {{ .Values.redis.persistence.storageClass }}
+  {{- else }}
   storageClassName: block-nvme-{{default "ord1" (.Values).region | lower}}
+  {{- end }}
   volumeMode: Filesystem
