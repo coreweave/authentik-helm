@@ -13,5 +13,9 @@ spec:
   resources:
     requests:
       storage: {{ default "8Gi" ((.Values.postgresql).persistence).requests }}
+  {{- if ((.Values.postgresql).persistence).storageClass }}
+  storageClassName: {{ .Values.postgresql.persistence.storageClass }}
+  {{- else }}
   storageClassName: block-nvme-{{default "ord1" (.Values).region | lower}}
+  {{- end }}
   volumeMode: Filesystem
