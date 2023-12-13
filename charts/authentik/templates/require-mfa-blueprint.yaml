@@ -1,0 +1,44 @@
+apiVersion: v1
+data:
+  require-mfa-blueprint.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    context: {}
+    metadata:
+      labels:
+        blueprints.goauthentik.io/instantiate: "{{ empty (.Values.customBlueprints).requireMfa | not }}"
+      name: Custom Blueprints - Require MFA
+    version: 1
+    entries:
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Default - Authentication flow
+        required: true
+    - model: authentik_blueprints.metaapplyblueprint
+      attrs:
+        identifiers:
+          name: Default - TOTP MFA setup flow
+        required: true
+    - attrs:
+        configuration_stages:
+        {{- if ((.Values.customBlueprints).requireMfa).configurationStages }}
+        {{- range ((.Values.customBlueprints).requireMfa).configurationStages }}
+        - {{ . }}
+        {{- end}}
+        {{- else }}
+        - !Find [authentik_stages_authenticator_totp.authenticatortotpstage, [name, default-authenticator-totp-setup]]
+        {{- end}}
+        name: default-authentication-mfa-validation
+        not_configured_action: {{ default "configure" ((.Values.customBlueprints).requireMfa).notConfiguredAction }}
+        webauthn_user_verification: {{ default "required" ((.Values.customBlueprints).requireMfa).webauthnUserVerification }}
+      conditions: []
+      id: default-authentication-mfa-validation
+      identifiers:
+        name: default-authentication-mfa-validation
+      model: authentik_stages_authenticator_validate.authenticatorvalidatestage
+      state: present
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-require-mfa
+  labels:
+    {{- include "authentik.labels" $ | nindent 4 }}

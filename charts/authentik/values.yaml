@@ -84,6 +84,9 @@ customBlueprints: {}
 #    redirectUris:
 #      - http://localhost:8080
 #      - https://login.tenant-org-name.ord1.ingress.coreweave.cloud
+# -- Patch default validation stage to require mfa
+#  requireMfa:
+#    enabled: true
 
 # -- Server replicas
 replicas: 1
