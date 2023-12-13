@@ -224,6 +224,7 @@ blueprints:
   - {{ .Release.Name }}-google-ldap-mapping-blueprint
   - {{ .Release.Name }}-okta-ldap-mapping-blueprint
   - {{ .Release.Name }}-oidc-provider-blueprint
+  - {{ .Release.Name }}-require-mfa
 {{- if .Values.blueprints }}
 {{- with .Values.blueprints }}
 {{- toYaml . | nindent 2 }}
