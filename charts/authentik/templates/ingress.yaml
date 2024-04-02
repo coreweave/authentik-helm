@@ -45,9 +45,9 @@ spec:
             backend:
               {{- if $apiIsStable }}
               service:
-                name: {{ include "authentik.names.fullname" $ }}
+                name: {{ .backend.service.name | default (include "authentik.names.fullname" $) }}
                 port:
-                  name: {{ $.Values.service.name }}
+                  name: {{ .backend.service.port.name | default ($.Values.service.name) }}
               {{- else }}
               serviceName: {{ include "authentik.names.fullname" $ }}
               servicePort: {{ $.Values.service.port }}
