@@ -1,4 +1,15 @@
 ---
+server:
+  pdb:
+    enabled: true
+    maxUnavailable: 25%
+worker:
+  pdb:
+    enabled: true
+    maxUnavailable: 25%
+
+### Required values below
+
 authentik:
   log_level: debug
   secret_key: 5up3r53cr37K3y

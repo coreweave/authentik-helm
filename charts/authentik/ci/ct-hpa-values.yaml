@@ -1,4 +1,15 @@
 ---
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+worker:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+
+### Required values below
+
 authentik:
   log_level: debug
   secret_key: 5up3r53cr37K3y
