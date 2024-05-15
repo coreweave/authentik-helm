@@ -77,7 +77,7 @@ customBlueprints: {}
 #        foo: bar
 # -- Create an OIDC provider(s)
 #  oidcProvider:
-#    name: oidc-k8s
+#  - name: oidc-k8s
 #    clientType: confidential
 #    accessCodeValidity: "minutes=1"
 #    accessTokenValidity: "minutes=5"
@@ -88,6 +88,7 @@ customBlueprints: {}
 # -- Patch default validation stage to require mfa
 #  requireMfa:
 #    enabled: true
+
 # -- Provide a name in place of `authentik`. Prefer using global.nameOverride if possible
 nameOverride: ""
 # -- String to fully override `"authentik.fullname"`. Prefer using global.fullnameOverride if possible
@@ -149,13 +150,15 @@ global:
     #     - my.hostname
 
   # -- Default priority class for all components
-  priorityClassName: ""
+  priorityClassName: null
 
   # -- Default node selector for all components
   nodeSelector: {}
 
   # -- Default tolerations for all components
-  tolerations: []
+  tolerations:
+    - key: is_cpu_compute
+      operator: Exists
 
   # Default affinity preset for all components
   affinity:
@@ -166,12 +169,15 @@ global:
       # -- Default node affinity rules. Either `none`, `soft` or `hard`
       type: hard
       # -- Default match expressions for node affinity
-      matchExpressions: []
-        # - key: topology.kubernetes.io/zone
-        #   operator: In
-        #   values:
-        #     - zonea
-        #     - zoneb
+      matchExpressions:
+        - key: topology.kubernetes.io/region
+          operator: In
+          values:
+            - '{{ .Values.region }}'
+        - key: node.coreweave.cloud/class
+          operator: In
+          values:
+            - cpu
 
   # -- Default [TopologySpreadConstraints] rules for all components
   ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
@@ -292,7 +298,16 @@ authentik:
 blueprints:
   # -- List of config maps to mount blueprints from.
   # Only keys in the configMap ending with `.yaml` will be discovered and applied.
-  configMaps: []
+  configMaps:
+  - '{{ .Release.Name }}-ldap-provider-blueprint'
+  - '{{ .Release.Name }}-users-blueprint'
+  - '{{ .Release.Name }}-users-passwords-blueprint'
+  - '{{ .Release.Name }}-groups-blueprint'
+  - '{{ .Release.Name }}-ldap-federation-blueprint'
+  - '{{ .Release.Name }}-google-ldap-mapping-blueprint'
+  - '{{ .Release.Name }}-okta-ldap-mapping-blueprint'
+  - '{{ .Release.Name }}-oidc-provider-blueprint'
+  - '{{ .Release.Name }}-require-mfa'
   # -- List of secrets to mount blueprints from.
   # Only keys in the secret ending with `.yaml` will be discovered and applied.
   secrets: []
@@ -648,7 +663,7 @@ server:
 
   ingress:
     # -- enable an ingress resource for the authentik server
-    enabled: false
+    enabled: true
     # -- additional ingress annotations
     annotations: {}
     # -- additional ingress labels
@@ -1071,13 +1086,22 @@ postgresql:
     #   storageClass:
     #   accessModes:
     #     - ReadWriteOnce
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 1Gi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+    affinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: '{{ .Release.Name }}'
+            namespaces:
+              - '{{ .Release.Namespace }}'
+            topologyKey: topology.kubernetes.io/region
 
 redis:
   # -- enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values.
@@ -1085,13 +1109,25 @@ redis:
   architecture: standalone
   auth:
     enabled: false
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 1Gi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
+  master:
+    service:
+      internalTrafficPolicy: null
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+    affinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: '{{ .Release.Name }}'
+            namespaces:
+              - '{{ .Release.Namespace }}'
+            topologyKey: topology.kubernetes.io/region
 
 
 # -- additional resources to deploy. Those objects are templated.

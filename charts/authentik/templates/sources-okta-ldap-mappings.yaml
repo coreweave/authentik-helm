@@ -84,4 +84,4 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-okta-ldap-mapping-blueprint
   labels:
-    {{- include "authentik.labels" $ | nindent 4 }}
+    {{- include "authentik.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}

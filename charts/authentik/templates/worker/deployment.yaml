@@ -73,6 +73,7 @@ spec:
             {{- with (concat .Values.global.env .Values.worker.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{ include "coreweave.env" . | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ template "authentik.fullname" . }}
@@ -92,8 +93,8 @@ spec:
               mountPath: /geoip
             {{- end }}
             {{- range $name := .Values.blueprints.configMaps }}
-            - name: blueprints-cm-{{ $name }}
-              mountPath: /blueprints/mounted/cm-{{ $name }}
+            - name: blueprints-cm-{{ tpl $name $ }}
+              mountPath: /blueprints/mounted/cm-{{ tpl $name $ }}
             {{- end }}
             {{- range $name := .Values.blueprints.secrets }}
             - name: blueprints-secret-{{ $name }}
@@ -215,9 +216,9 @@ spec:
           emptyDir: {}
       {{- end }}
       {{- range $name := .Values.blueprints.configMaps }}
-        - name: blueprints-cm-{{ $name }}
+        - name: blueprints-cm-{{ tpl $name $ }}
           configMap:
-            name: {{ $name }}
+            name: {{ tpl $name $ }}
       {{- end }}
       {{- range $name := .Values.blueprints.secrets }}
         - name: blueprints-secret-{{ $name }}

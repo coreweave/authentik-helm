@@ -67,6 +67,16 @@ spec:
           args:
             - server
           env:
+            - name: AUTHENTIK_POSTGRESQL__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql
+                  key: password
+            - name: AUTHENTIK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-keys
+                  key: secret_key
             {{- with (concat .Values.global.env .Values.server.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

@@ -18,7 +18,7 @@ spec:
             - -X
             - PATCH
             - --url
-            - https://{{ (include "authentik.names.fullname" $) }}/api/v3/sources/ldap/{{ .name }}/
+            - https://{{ (include "authentik.server.fullname" $) }}/api/v3/sources/ldap/{{ .name }}/
             - -H
             - 'accept: application/json'
             - -H

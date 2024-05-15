@@ -63,53 +63,69 @@ Node affinity
   - Soft prefers given user expressions
   - Hard requires given user expressions
 */}}
+
+{{- define "authentik.matchExpressions" -}}
+{{- $root := .root -}}
+{{- range $expr := .matchExpressions }}
+- key: {{ tpl $expr.key $root }}
+  operator: {{ tpl $expr.operator $root }}
+  values:
+    {{- range $value := $expr.values }}
+    - {{ tpl $value $root }}
+    {{- end }}
+{{- end }}
+{{- end -}}
+
 {{- define "authentik.affinity" -}}
-{{- with .component.affinity -}}
+{{- $context := .context -}}
+{{- $component := .component -}}
+{{- with $component.affinity -}}
   {{- toYaml . -}}
 {{- else -}}
-{{- $preset := .context.Values.global.affinity -}}
-{{- if (eq $preset.podAntiAffinity "soft") }}
-podAntiAffinity:
-  preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      podAffinityTerm:
-        labelSelector:
+  {{- $preset := $context.Values.global.affinity -}}
+  {{- if (eq $preset.podAntiAffinity "soft") }}
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              {{- include "authentik.selectorLabels" (dict "context" $context "component" $component.name) | nindent 14 }}
+          topologyKey: kubernetes.io/hostname
+  {{- else if (eq $preset.podAntiAffinity "hard") }}
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              {{- include "authentik.selectorLabels" (dict "context" $context "component" $component.name) | nindent 14 }}
+          topologyKey: topology.kubernetes.io/zone
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
           matchLabels:
-            {{- include "authentik.selectorLabels" (dict "context" .context "component" .component.name) | nindent 12 }}
+            {{- include "authentik.selectorLabels" (dict "context" $context "component" $component.name) | nindent 14 }}
         topologyKey: kubernetes.io/hostname
-{{- else if (eq $preset.podAntiAffinity "hard") }}
-podAntiAffinity:
-  preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      podAffinityTerm:
-        labelSelector:
-          matchLabels:
-            {{- include "authentik.selectorLabels" (dict "context" .context "component" .component.name) | nindent 12 }}
-        topologyKey: topology.kubernetes.io/zone
-  requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchLabels:
-          {{- include "authentik.selectorLabels" (dict "context" .context "component" .component.name) | nindent 10 }}
-      topologyKey: kubernetes.io/hostname
-{{- end }}
-{{- with $preset.nodeAffinity.matchExpressions }}
-{{- if (eq $preset.nodeAffinity.type "soft") }}
+  {{- end }}
+  {{- with $preset.nodeAffinity.matchExpressions }}
+    {{- if (eq $preset.nodeAffinity.type "soft") }}
 nodeAffinity:
   preferredDuringSchedulingIgnoredDuringExecution:
     - weight: 1
       preference:
         matchExpressions:
-          {{- toYaml . | nindent 10 }}
+          {{- include "authentik.matchExpressions" (dict "matchExpressions" $preset.nodeAffinity.matchExpressions "root" $context) | indent 8 }}
 {{- else if (eq $preset.nodeAffinity.type "hard") }}
 nodeAffinity:
   requiredDuringSchedulingIgnoredDuringExecution:
     nodeSelectorTerms:
       - matchExpressions:
-        {{- toYaml . | nindent 8 }}
+          {{- include "authentik.matchExpressions" (dict "matchExpressions" $preset.nodeAffinity.matchExpressions "root" $context) | indent 8 }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- end -}}
-{{- end -}}
-{{- end -}}
+
 
 {{/*
     Create Hostname helper -- Coreweave Use Only
@@ -184,52 +200,55 @@ affinity:
 {{- define "coreweave.certSecretName" -}}
 {{printf "%s-tls-cert" .Release.Name }}
 {{- end -}}
-{{- define "coreweave.envValueFrom" -}}
-envValueFrom:
-  AUTHENTIK_POSTGRESQL__PASSWORD:
+{{- define "coreweave.env" -}}
+- name: AUTHENTIK_POSTGRESQL__PASSWORD
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-postgresql
-      key: postgresql-password
-  AUTHENTIK_SECRET_KEY:
+      key: password
+- name: AUTHENTIK_SECRET_KEY
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: secret_key
-  AUTHENTIK_BOOTSTRAP_PASSWORD:
+- name: AUTHENTIK_BOOTSTRAP_PASSWORD
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: akadmin_password
-  AUTHENTIK_BOOTSTRAP_TOKEN:
+- name: AUTHENTIK_BOOTSTRAP_TOKEN
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: bootstrap_token
-  AUTHENTIK_BOOTSTRAP_EMAIL:
+- name: AUTHENTIK_BOOTSTRAP_EMAIL
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: admin_email
-  AUTHENTIK_LDAP_SVC_KEY:
+- name: AUTHENTIK_LDAP_SVC_KEY
+  valueFrom:
     secretKeyRef:
       name: {{ .Release.Name }}-keys
       key: ldapsvc_password
-  {{- range ((.Values).customBlueprints).oidcProvider }}
-  {{ printf "oidc-%s-client-id" .name }}:
+{{- range ((.Values).customBlueprints).oidcProvider }}
+- name: {{ printf "oidc-%s-client-id" .name }}
+  valueFrom:
     secretKeyRef:
       name: {{ printf "%s-oidc-%s-keys" $.Release.Name .name }}
       key: {{ printf "oidc-%s-client-id" .name }}
-  {{ printf "oidc-%s-client-secret" .name }}:
+- name: {{ printf "oidc-%s-client-secret" .name }}
+  valueFrom:
     secretKeyRef:
       name: {{ printf "%s-oidc-%s-keys" $.Release.Name .name }}
       key: {{ printf "oidc-%s-client-secret" .name }}
-  {{- end }}
-  {{- range ((.Values).customBlueprints).users }}
-  {{ printf "%s_password" .userName }}:
+{{- end }}
+{{- range ((.Values).customBlueprints).users }}
+- name: {{ printf "%s_password" .userName }}
+  valueFrom:
     secretKeyRef:
       name: {{ printf "%s-%s-keys"  $.Release.Name .userName }}
       key: {{ printf "%s_password" .userName }}
-  {{- end }}
-{{- if .Values.envValueFrom }}
-{{- with .Values.envValueFrom }}
-{{- toYaml . | nindent 2 }}
-{{- end }}
 {{- end }}
 {{- end -}}
 
@@ -261,8 +280,8 @@ annotations:
   ingress.kubernetes.io/force-ssl-redirect: "true"
   ingress.kubernetes.io/ssl-redirect: "true"
   kubernetes.io/ingress.allow-http: "false"
-{{- if .Values.ingress.annotations }}
-{{- with .Values.ingress.annotations }}
+{{- if .Values.server.ingress.annotations }}
+{{- with .Values.server.ingress.annotations }}
 {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- end }}

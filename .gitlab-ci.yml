@@ -39,6 +39,7 @@ Helm push:
     - helm repo add helm_repo $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASS
     - helm repo add authentik https://charts.goauthentik.io && helm repo update
     - for x in $(find . -maxdepth 1 -mindepth 1 -type d -not -path "./authentik"); do helm package $x --destination ./authentik/charts; done
+    - helm dep build authentik/
     - helm cm-push ./authentik helm_repo -f
   needs:
     - Helm lint
