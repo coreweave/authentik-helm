@@ -1,7 +1,7 @@
-{{- if .Values.ingress.enabled }}
+{{- if .Values.server.ingress.enabled }}
 Authentik is now accessible at https://{{ .Release.Name }}.{{ .Release.Namespace }}.{{ .Values.region | lower }}.ingress.coreweave.cloud. On first access, you might get a TLS certificate error. It takes up to five minutes for the certificate to be issued.
 {{- else}}
-Authentik is now accessible within cluster at https://{{ include "authentik.names.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local - If external access to the web portal is required, please enable Ingress.
+Authentik is now accessible within cluster at https://{{ include "authentik.server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local - If external access to the web portal is required, please enable Ingress.
 {{- end }}
 
 Login information:

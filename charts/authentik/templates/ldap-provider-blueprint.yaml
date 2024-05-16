@@ -73,7 +73,7 @@ data:
       state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         config:
-          authentik_host: http://{{ include "authentik.names.fullname" . }}
+          authentik_host: http://{{ include "authentik.server.fullname" . }}
           authentik_host_insecure: {{ default "false" (((.Values).customBlueprints).ldapProvider).hostInsecure }}
           kubernetes_ingress_secret_name: {{ $.Release.Name }}-outpost-tls
           {{- if not ((((.Values).customBlueprints).ldapProvider).config).kubernetes_json_patches }}
@@ -82,7 +82,7 @@ data:
               - op: add
                 path: /spec/template/spec/containers/0/resources
                 value:
-                  {{- with index $.Values.resources.worker }}
+                  {{- with index $.Values.worker.resources }}
                   {{- toYaml . | nindent 18 }}{{ end }}
               - op: move
                 from: /spec/template/spec/containers
@@ -90,8 +90,14 @@ data:
               - op: add
                 path: /spec/template/spec
                 value:
-                {{- include "coreweave.affinity" . | indent 18 }}
-                {{- include "coreweave.tolerations" . | indent 18 }}
+                  {{- with include "authentik.affinity" (dict "context" . "component" .Values.server) }}
+                  affinity:
+                    {{- trim . | nindent 20 }}
+                  {{- end }}
+                  {{- with .Values.server.tolerations | default .Values.global.tolerations }}
+                  tolerations:
+                    {{- toYaml . | nindent 20 }}
+                  {{- end }}
               - op: move
                 path: /spec/template/spec/containers
                 from: /spec/temp
@@ -117,4 +123,4 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-ldap-provider-blueprint
   labels:
-    {{- include "authentik.labels" $ | nindent 4 }}
+    {{- include "authentik.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
