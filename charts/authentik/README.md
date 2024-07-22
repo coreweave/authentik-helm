@@ -6,8 +6,8 @@
 
 [![Join Discord](https://img.shields.io/discord/809154715984199690?label=Discord&style=for-the-badge)](https://goauthentik.io/discord)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/goauthentik/helm/lint-test.yaml?branch=main&label=ci&style=for-the-badge)](https://github.com/goauthentik/helm/actions/workflows/lint-test.yaml)
-![Version: 2024.4.2](https://img.shields.io/badge/Version-2024.4.2-informational?style=for-the-badge)
-![AppVersion: 2024.4.2](https://img.shields.io/badge/AppVersion-2024.4.2-informational?style=for-the-badge)
+![Version: 2024.6.1](https://img.shields.io/badge/Version-2024.6.1-informational?style=for-the-badge)
+![AppVersion: 2024.6.1](https://img.shields.io/badge/AppVersion-2024.6.1-informational?style=for-the-badge)
 
 authentik is an open-source Identity Provider focused on flexibility and versatility
 
@@ -301,6 +301,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | server.service.sessionAffinity | string | `""` | Used to maintain session affinity. Supports `ClientIP` and `None` |
 | server.service.sessionAffinityConfig | object | `{}` | Session affinity configuration |
 | server.service.type | string | `"ClusterIP"` | authentik server service type |
+| server.serviceAccountName | string | `nil` | serviceAccount to use for authentik server pods |
 | server.startupProbe.failureThreshold | int | `60` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | server.startupProbe.httpGet.path | string | `"/-/health/live/"` |  |
 | server.startupProbe.httpGet.port | string | `"http"` |  |
@@ -368,6 +369,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | worker.replicas | int | `1` | The number of worker pods to run |
 | worker.resources | object | `{}` | Resource limits and requests for the authentik worker |
 | worker.securityContext | object | `{}` (See [values.yaml]) | authentik worker pod-level security context |
+| worker.serviceAccountName | string | `nil` | serviceAccount to use for authentik worker pods. If set, overrides the value used when serviceAccount.create is true |
 | worker.startupProbe.exec.command[0] | string | `"ak"` |  |
 | worker.startupProbe.exec.command[1] | string | `"healthcheck"` |  |
 | worker.startupProbe.failureThreshold | int | `60` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
