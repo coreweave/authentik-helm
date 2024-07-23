@@ -12,9 +12,9 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: {{ default "8Gi" ((.Values.redis).persistence).requests }}
-  {{- if ((.Values.redis).persistence).storageClass }}
-  storageClassName: {{ .Values.redis.persistence.storageClass }}
+      storage: {{ default "8Gi" (((.Values.redis).primary).persistence).requests }}
+  {{- if (((.Values.redis).primary).persistence).storageClass }}
+  storageClassName: {{ (((.Values.redis).primary).persistence).storageClass }}
   {{- else }}
   storageClassName: block-nvme-{{default "ord1" (.Values).region | lower}}
   {{- end }}
