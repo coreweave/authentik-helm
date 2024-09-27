@@ -25,7 +25,7 @@ Create authentik configuration environment variables.
             {{- end -}}
         {{- else -}}
             {{- $value := $v -}}
-            {{- if or (kindIs "bool" $v) (kindIs "float64" $v) -}}
+            {{- if or (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int" $v) (kindIs "int64" $v) -}}
                 {{- $v = $v | toString | b64enc | quote -}}
             {{- else -}}
                 {{- $v = tpl $v $.root | toString | b64enc | quote }}
@@ -244,11 +244,13 @@ affinity:
       key: {{ printf "oidc-%s-client-secret" .name }}
 {{- end }}
 {{- range ((.Values).customBlueprints).users }}
+{{- if ne .generatePassword "false" }}
 - name: {{ printf "%s_password" .userName }}
   valueFrom:
     secretKeyRef:
       name: {{ printf "%s-%s-keys"  $.Release.Name .userName }}
       key: {{ printf "%s_password" .userName }}
+{{- end }}
 {{- end }}
 {{- end -}}
 

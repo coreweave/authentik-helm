@@ -1,9 +1,9 @@
 {{- range ((.Values.customBlueprints).federation).ldap }}
 {{- if (.syncJob).enabled }}
-{{- if lt (int .Capabilities.KubeVersion.Minor) 25 }}
-apiVersion: batch/v1beta1
-{{- else }}
+{{- if and .Capabilities (lt (int .Capabilities.KubeVersion.Minor) 25) }}
 apiVersion: batch/v1
+{{- else }}
+apiVersion: batch/v1beta1
 {{- end }}
 kind: CronJob
 metadata:
