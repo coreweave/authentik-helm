@@ -244,7 +244,7 @@ affinity:
       key: {{ printf "oidc-%s-client-secret" .name }}
 {{- end }}
 {{- range ((.Values).customBlueprints).users }}
-{{- if not .passwordLess}}
+{{- if ne .generatePassword "false" }}
 - name: {{ printf "%s_password" .userName }}
   valueFrom:
     secretKeyRef:

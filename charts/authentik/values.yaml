@@ -50,7 +50,7 @@ customBlueprints: {}
 #  - name: "John Smith"
 #    userName: "jsmith"
 #    email: "jsmith@foo.com"
-#    passwordLess: false # Optional, defaults to false. Skips creating a password
+#    generatePassword: "true" # Optional, defaults to true. Creates a password for the user and stores it as a Kubernetes secret
 #    attributes:
 #      sshPublicKey: "ssh-ed25519 my-ssh-key"
 #      homeDirectory: "/home/jsmith"
@@ -60,7 +60,7 @@ customBlueprints: {}
 #    userName: "jdoe"
 #    email: "jdoe@bar.com"
 #    state: present # Default, reconcile changes
-#    passwordLess: false # Optional, defaults to false. Skips creating a password
+#    generatePassword: "true" # Optional, defaults to true. Creates a password for the user and stores it as a Kubernetes secret
 #    passwordState: created # Default, only set default password once
 #    attributes:
 #      homeDirectory: "/home/jdoe"
@@ -72,7 +72,7 @@ customBlueprints: {}
 #    userName: "tadam"
 #    email: "tadam@bar.com"
 #    state: present # Default, reconcile changes
-#    passwordLess: true # Optional, defaults to false. Skips creating a password
+#    generatePassword: "false" # Optional, defaults to true. Creates a password for the user and stores it as a Kubernetes secret
 #    passwordState: created # Default, only set default password once
 #    attributes:
 #      homeDirectory: "/home/jdoe"
