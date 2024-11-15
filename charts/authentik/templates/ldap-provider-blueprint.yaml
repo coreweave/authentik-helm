@@ -44,11 +44,13 @@ data:
       model: authentik_core.user
       state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
-        authorization_flow: !Find [authentik_flows.flow, [slug, "default-authentication-flow"]]
+        authentication_flow: {{ default "!Find [authentik_flows.flow, [slug, "default-authentication-flow"]]" (((.Values).customBlueprints).ldapProvider).authenticationFlow }}
+        authorization_flow: {{ default "!Find [authentik_flows.flow, [slug, "default-authorization-flow"]]" (((.Values).customBlueprints).ldapProvider).authorizationFlow }}
+        invalidation_flow: {{ default "!Find [authentik_flows.flow, [slug, "default-invalidation-flow"]]" (((.Values).customBlueprints).ldapProvider).invalidationFlow }}
         base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
         bind_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).bindMode }}
         gid_start_number: {{ default "4000" (((.Values).customBlueprints).ldapProvider).gidStart }}
-        mfa_support: false
+        mfa_support: {{ default "false" (((.Values).customBlueprints).ldapProvider).mfaSupport }}
         name: LDAP
         search_group: !KeyOf ldap_search_group
         search_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).searchMode }}
@@ -58,6 +60,9 @@ data:
       id: ldap_provider
       identifiers:
         name: ldap_provider
+      permissions:
+        - permission: search_full_directory
+          user: !KeyOf ldap_search_user
       model: authentik_providers_ldap.ldapprovider
       state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
