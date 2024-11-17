@@ -30,6 +30,7 @@ data:
         slug: {{ default "ldap-source" .name }}
         enabled: true
         policy_engine_mode: any
+        password_login_update_internal_password: {{ default "false" .updateInternalPassword }}
         user_matching_mode: {{ default "identifier" .userMatchingMode }}
         user_path_template: {{ default "goauthentik.io/sources/%(slug)s" .userPathTemplate }}
         {{- if .peerCertificate }}
@@ -57,46 +58,46 @@ data:
         {{- if .parentGroup }}
         sync_parent_group: !Find [authentik_core.group, [name, {{ .parentGroup }}]]{{ end }}
         {{- if and .propertyMappingsUser .propertyMappingsGroup  }}
-        property_mappings:
+        user_property_mappings:
           {{- range .propertyMappingsUser }}
-          - !Find [authentik_sources_ldap.ldappropertymapping, [name, "{{ . }}"]]
+          - !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, "{{ . }}"]]
           {{- end}}
-        property_mappings_group:
+        group_property_mappings:
           {{- range .propertyMappingsGroup }}
-          - !Find [authentik_sources_ldap.ldappropertymapping, [name, "{{ . }}"]]
+          - !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, "{{ . }}"]]
           {{- end}}
         {{- else if eq "googleLDAP" .type  }}
-        property_mappings: !Enumerate [
-            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: departmentNumber", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: employeeNumber", "Google Secure LDAP Mapping: employeeType", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: givenName", "Google Secure LDAP Mapping: googleUid", "Google Secure LDAP Mapping: homeDirectory", "Google Secure LDAP Mapping: jpegPhoto", "Google Secure LDAP Mapping: loginShell", "Google Secure LDAP Mapping: mail", "Google Secure LDAP Mapping: memberOf", "Google Secure LDAP Mapping: objectSid", "Google Secure LDAP Mapping: physicalDeliveryOfficeName", "Google Secure LDAP Mapping: posixUid", "Google Secure LDAP Mapping: sn", "Google Secure LDAP Mapping: sshPublicKey", "Google Secure LDAP Mapping: title", "Google Secure LDAP Mapping: uid", "Google Secure LDAP Mapping: uidNumber"],
+        user_property_mappings: !Enumerate [
+            ["Google Secure LDAP Mapping: User Mapping Properties"],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
-        property_mappings_group: !Enumerate [
-            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: description", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: gidNumber", "Google Secure LDAP Mapping: googleAdminCreated", "Google Secure LDAP Mapping: member", "Google Secure LDAP Mapping: memberUid", "Google Secure LDAP Mapping: objectSid"],
+        group_property_mappings: !Enumerate [
+            ["Google Secure LDAP Mapping: Group Mapping Properties"],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
         {{- else if eq "oktaLDAP" .type  }}
-        property_mappings: !Enumerate [
-            ["Okta LDAP Mapping: uid", "Okta LDAP Mapping: givenName", "Okta LDAP Mapping: sn", "Okta LDAP Mapping: mail", "Okta LDAP Mapping: cn", "Google Secure LDAP Mapping: sshPublicKey"],
+        user_property_mappings: !Enumerate [
+            ["Okta LDAP: User Mapping Properties"],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
-        property_mappings_group: !Enumerate [
-            ["Okta LDAP Mapping: description", "Okta LDAP Mapping: uniqueMember", "Okta LDAP Mapping: memberOf", "Okta LDAP Mapping: cn"],
+        group_property_mappings: !Enumerate [
+            ["Okta LDAP: Group Mapping Properties"],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
         {{- else }}
-        property_mappings: !Enumerate [
-            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: departmentNumber", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: employeeNumber", "Google Secure LDAP Mapping: employeeType", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: givenName", "Google Secure LDAP Mapping: googleUid", "Google Secure LDAP Mapping: homeDirectory", "Google Secure LDAP Mapping: jpegPhoto", "Google Secure LDAP Mapping: loginShell", "Google Secure LDAP Mapping: mail", "Google Secure LDAP Mapping: memberOf", "Google Secure LDAP Mapping: objectSid", "Google Secure LDAP Mapping: physicalDeliveryOfficeName", "Google Secure LDAP Mapping: posixUid", "Google Secure LDAP Mapping: sn", "Google Secure LDAP Mapping: sshPublicKey", "Google Secure LDAP Mapping: title", "Google Secure LDAP Mapping: uid", "Google Secure LDAP Mapping: uidNumber","authentik default Active Directory Mapping: sAMAccountName","authentik default Active Directory Mapping: userPrincipalName],
+        user_property_mappings: !Enumerate [
+            ["authentik default LDAP Mapping: DN to User Path","authentik default LDAP Mapping: Name","authentik default LDAP Mapping: mail",],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
-        property_mappings_group: !Enumerate [
-            ["Google Secure LDAP Mapping: cn", "Google Secure LDAP Mapping: description", "Google Secure LDAP Mapping: displayName", "Google Secure LDAP Mapping: entryUuid", "Google Secure LDAP Mapping: gidNumber", "Google Secure LDAP Mapping: googleAdminCreated", "Google Secure LDAP Mapping: member", "Google Secure LDAP Mapping: memberUid", "Google Secure LDAP Mapping: objectSid"],
+        group_property_mappings: !Enumerate [
+            ["authentik default LDAP Mapping: Name"],
             SEQ,
-            !Find [authentik_sources_ldap.ldappropertymapping, [name, !Value 0]]
+            !Find [authentik_sources_ldap.ldapsourcepropertymapping, [name, !Value 0]]
         ]
         {{- end }}
         server_uri: {{ default "ldap://openldap" .serverUri }}
