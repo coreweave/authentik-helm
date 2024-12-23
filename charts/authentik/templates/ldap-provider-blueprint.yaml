@@ -45,7 +45,7 @@ data:
       state: {{ default "present" (((.Values).customBlueprints).ldapProvider).state }}
     - attrs:
         authentication_flow: {{ default "!Find [authentik_flows.flow, [slug, \"default-authentication-flow\"]]" (((.Values).customBlueprints).ldapProvider).authenticationFlow }}
-        authorization_flow: {{ default "!Find [authentik_flows.flow, [slug, \"default-authentication-flow\"]]" (((.Values).customBlueprints).ldapProvider).authorizationFlow }}
+        authorization_flow: {{ default "!Find [authentik_flows.flow, [slug, \"default-authorization-flow\"]]" (((.Values).customBlueprints).ldapProvider).authorizationFlow }}
         invalidation_flow: {{ default "!Find [authentik_flows.flow, [slug, \"default-invalidation-flow\"]]" (((.Values).customBlueprints).ldapProvider).invalidationFlow }}
         base_dn: DC={{ (default "coreweave.cloud" (((.Values).customBlueprints).ldapProvider).domain) | replace "." ",DC=" }}
         bind_mode: {{ default "cached" (((.Values).customBlueprints).ldapProvider).bindMode }}
