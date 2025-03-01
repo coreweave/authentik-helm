@@ -6,8 +6,8 @@
 
 [![Join Discord](https://img.shields.io/discord/809154715984199690?label=Discord&style=for-the-badge)](https://goauthentik.io/discord)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/goauthentik/helm/lint-test.yaml?branch=main&label=ci&style=for-the-badge)](https://github.com/goauthentik/helm/actions/workflows/lint-test.yaml)
-![Version: 2024.10.2](https://img.shields.io/badge/Version-2024.10.2-informational?style=for-the-badge)
-![AppVersion: 2024.10.2](https://img.shields.io/badge/AppVersion-2024.10.2-informational?style=for-the-badge)
+![Version: 2025.2.1](https://img.shields.io/badge/Version-2025.2.1-informational?style=for-the-badge)
+![AppVersion: 2025.2.1](https://img.shields.io/badge/AppVersion-2025.2.1-informational?style=for-the-badge)
 
 authentik is an open-source Identity Provider focused on flexibility and versatility
 
@@ -111,8 +111,8 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | Repository | Name | Version |
 |------------|------|---------|
 | https://charts.goauthentik.io | serviceAccount(authentik-remote-cluster) | 2.0.0 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 12.12.10 |
-| oci://registry-1.docker.io/bitnamicharts | redis | 18.6.1 |
+| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.0.4 |
+| oci://registry-1.docker.io/bitnamicharts | redis | 20.2.1 |
 
 ## Values
 
@@ -142,6 +142,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | authentik.redis.host | string | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
 | authentik.redis.password | string | `""` |  |
 | authentik.secret_key | string | `""` | Secret key used for cookie singing and unique user IDs, don't change this after the first install |
+| authentik.web.path | string | `"/"` | Relative path the authentik instance will be available at. Value _must_ contain both a leading and trailing slash. |
 | blueprints.configMaps | list | `[]` | List of config maps to mount blueprints from. Only keys in the configMap ending with `.yaml` will be discovered and applied. |
 | blueprints.secrets | list | `[]` | List of secrets to mount blueprints from. Only keys in the secret ending with `.yaml` will be discovered and applied. |
 | customBlueprints | object | `{}` | Custom CoreWeave Blueprints |
@@ -158,7 +159,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | geoip.image.digest | string | `""` | If defined, an image digest for GeoIP images |
 | geoip.image.pullPolicy | string | `"IfNotPresent"` | If defined, an imagePullPolicy for GeoIP images |
 | geoip.image.repository | string | `"ghcr.io/maxmind/geoipupdate"` | If defined, a repository for GeoIP images |
-| geoip.image.tag | string | `"v6.0.0"` | If defined, a tag for GeoIP images |
+| geoip.image.tag | string | `"v7.1.0"` | If defined, a tag for GeoIP images |
 | geoip.licenseKey | string | `""` | sign up under https://www.maxmind.com/en/geolite2/signup |
 | geoip.resources | object | `{}` | Resource limits and requests for GeoIP containers |
 | geoip.updateInterval | int | `8` | GeoIP update frequency, in hours |
@@ -180,11 +181,13 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | global.image.tag | string | `""` | Overrides the global authentik whose default is the chart appVersion |
 | global.imagePullSecrets | list | `[]` | Secrets with credentials to pull images from a private registry |
 | global.nameOverride | string | `""` | Provide a name in place of `authentik` |
+| global.namespaceOverride | string | `""` | A custom namespace to override the default namespace for the deployed resources. |
 | global.nodeSelector | object | `{}` | Default node selector for all components |
 | global.podAnnotations | object | `{}` | Annotations for all deployed pods |
 | global.podLabels | object | `{}` | Labels for all deployed pods |
 | global.priorityClassName | string | `""` | Default priority class for all components |
 | global.revisionHistoryLimit | int | `3` |  |
+| global.secretAnnotations | object | `{}` | Annotations for all deployed secrets |
 | global.securityContext | object | `{}` (See [values.yaml]) | Toggle and define pod-level security context. |
 | global.tolerations | list | `[]` | Default tolerations for all components |
 | global.topologySpreadConstraints | list | `[]` | Default [TopologySpreadConstraints] rules for all components # Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/ |
@@ -194,8 +197,16 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | nameOverride | string | `""` | Provide a name in place of `authentik`. Prefer using global.nameOverride if possible |
 | postgresql.auth.database | string | `"authentik"` |  |
 | postgresql.auth.username | string | `"authentik"` |  |
+| postgresql.backup.resourcesPreset | string | `"none"` |  |
 | postgresql.enabled | bool | `false` | enable the Bitnami PostgreSQL chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/postgresql/ for possible values. |
+| postgresql.image.repository | string | `"bitnami/postgresql"` |  |
+| postgresql.image.tag | string | `"15.8.0-debian-12-r18"` |  |
+| postgresql.metrics.resourcesPreset | string | `"none"` |  |
+| postgresql.passwordUpdateJob.resourcesPreset | string | `"none"` |  |
 | postgresql.primary.extendedConfiguration | string | `"max_connections = 500\n"` |  |
+| postgresql.primary.resourcesPreset | string | `"none"` |  |
+| postgresql.readReplicas.resourcesPreset | string | `"none"` |  |
+| postgresql.volumePermissions.resourcesPreset | string | `"none"` |  |
 | prometheus.rules.annotations | object | `{}` | PrometheusRule annotations |
 | prometheus.rules.enabled | bool | `false` |  |
 | prometheus.rules.labels | object | `{}` | PrometheusRule labels |
@@ -204,6 +215,12 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.enabled | bool | `false` | enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values. |
+| redis.master.resourcesPreset | string | `"none"` |  |
+| redis.metrics.resourcesPreset | string | `"none"` |  |
+| redis.replica.resourcesPreset | string | `"none"` |  |
+| redis.sentinel.resourcesPreset | string | `"none"` |  |
+| redis.sysctl.resourcesPreset | string | `"none"` |  |
+| redis.volumePermissions.resourcesPreset | string | `"none"` |  |
 | server.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
 | server.autoscaling.behavior | object | `{}` | Configures the scaling behavior of the target in both Up and Down directions. |
 | server.autoscaling.enabled | bool | `false` | Enable Horizontal Pod Autoscaler ([HPA]) for the authentik server |
@@ -237,12 +254,12 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | server.ingress.ingressClassName | string | `""` | defines which ingress controller will implement the resource |
 | server.ingress.labels | object | `{}` | additional ingress labels |
 | server.ingress.pathType | string | `"Prefix"` | Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific` |
-| server.ingress.paths | list | `["/"]` | List of ingress paths |
+| server.ingress.paths | list | `["{{ .Values.authentik.web.path }}"]` | List of ingress paths |
 | server.ingress.tls | list | `[]` | ingress TLS configuration |
 | server.initContainers | list | `[]` | Init containers to add to the authentik server pod # Note: Supports use of custom Helm templates |
 | server.lifecycle | object | `{}` | Specify postStart and preStop lifecycle hooks for you authentik server container |
 | server.livenessProbe.failureThreshold | int | `3` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
-| server.livenessProbe.httpGet.path | string | `"/-/health/live/"` |  |
+| server.livenessProbe.httpGet.path | string | `"{{ .Values.authentik.web.path }}-/health/live/"` |  |
 | server.livenessProbe.httpGet.port | string | `"http"` |  |
 | server.livenessProbe.initialDelaySeconds | int | `5` | Number of seconds after the container has started before [probe] is initiated |
 | server.livenessProbe.periodSeconds | int | `10` | How often (in seconds) to perform the [probe] |
@@ -277,7 +294,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | server.podLabels | object | `{}` | Labels to be added to the authentik server pods |
 | server.priorityClassName | string | `""` (defaults to global.priorityClassName) | Prority class for the authentik server pods |
 | server.readinessProbe.failureThreshold | int | `3` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
-| server.readinessProbe.httpGet.path | string | `"/-/health/ready/"` |  |
+| server.readinessProbe.httpGet.path | string | `"{{ .Values.authentik.web.path }}-/health/ready/"` |  |
 | server.readinessProbe.httpGet.port | string | `"http"` |  |
 | server.readinessProbe.initialDelaySeconds | int | `5` | Number of seconds after the container has started before [probe] is initiated |
 | server.readinessProbe.periodSeconds | int | `10` | How often (in seconds) to perform the [probe] |
@@ -303,7 +320,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | server.service.type | string | `"ClusterIP"` | authentik server service type |
 | server.serviceAccountName | string | `nil` | serviceAccount to use for authentik server pods |
 | server.startupProbe.failureThreshold | int | `60` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
-| server.startupProbe.httpGet.path | string | `"/-/health/live/"` |  |
+| server.startupProbe.httpGet.path | string | `"{{ .Values.authentik.web.path }}-/health/live/"` |  |
 | server.startupProbe.httpGet.port | string | `"http"` |  |
 | server.startupProbe.initialDelaySeconds | int | `5` | Number of seconds after the container has started before [probe] is initiated |
 | server.startupProbe.periodSeconds | int | `10` | How often (in seconds) to perform the [probe] |
