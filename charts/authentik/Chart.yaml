@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
-version: 2024.10.2
-appVersion: 2024.10.2
+version: 2025.2.1
+appVersion: 2025.2.1
 name: authentik
 description: authentik is an open-source Identity Provider focused on flexibility and versatility
 type: application
@@ -30,11 +30,11 @@ maintainers:
     url: https://goauthentik.io
 dependencies:
   - name: postgresql
-    version: 12.12.10
+    version: 16.0.4
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
   - name: redis
-    version: 18.6.1
+    version: 20.2.1
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: redis.enabled
   - name: authentik-remote-cluster
@@ -45,7 +45,7 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: upgrade to authentik 2024.10.2
+      description: upgrade to authentik 2025.2.1
   artifacthub.io/license: GPL
   artifacthub.io/links: |
     - name: GitHub
@@ -58,19 +58,19 @@ annotations:
       url: https://goauthentik.io
   artifacthub.io/images: |
     - name: authentik
-      image: ghcr.io/goauthentik/server:2024.10.2
+      image: ghcr.io/goauthentik/server:2025.2.1
       whitelisted: true
     - name: authentik-outpost-proxy
-      image: ghcr.io/goauthentik/proxy:2024.10.2
+      image: ghcr.io/goauthentik/proxy:2025.2.1
       whitelisted: true
     - name: authentik-outpost-ldap
-      image: ghcr.io/goauthentik/ldap:2024.10.2
+      image: ghcr.io/goauthentik/ldap:2025.2.1
       whitelisted: true
     - name: authentik-outpost-radius
-      image: ghcr.io/goauthentik/radius:2024.10.2
+      image: ghcr.io/goauthentik/radius:2025.2.1
       whitelisted: true
     - name: authentik-outpost-rac
-      image: ghcr.io/goauthentik/rac:2024.10.2
+      image: ghcr.io/goauthentik/rac:2025.2.1
       whitelisted: true
   artifacthub.io/screenshots: |
     - title: User interface

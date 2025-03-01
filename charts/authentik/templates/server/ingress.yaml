@@ -7,7 +7,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "authentik.server.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "authentik.namespace" . | quote }}
   labels:
     {{- include "authentik.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
     {{- with .Values.server.ingress.labels }}
@@ -35,7 +35,7 @@ spec:
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- range $p := $paths }}
-          - path: {{ $p }}
+          - path: {{ tpl (toYaml $p) $ }}
             pathType: {{ $pathType }}
             backend:
               service:
@@ -52,8 +52,12 @@ spec:
     - host: {{ include "coreweave.externalDnsName" . }}
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          {{- with $extraPaths }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- range $p := $paths }}
+          - path: {{ tpl (toYaml $p) $ }}
+            pathType: {{ $pathType }}
             backend:
               service:
                 name: {{ include "authentik.server.fullname" $ }}
