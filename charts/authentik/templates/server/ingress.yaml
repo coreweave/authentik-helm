@@ -63,6 +63,7 @@ spec:
                 name: {{ include "authentik.server.fullname" $ }}
                 port:
                   name: {{ $.Values.server.service.servicePortHttpName }}
+          {{- end }}
   {{- end -}}
   {{- if .Values.server.ingress.tls }}
   {{- with .Values.server.ingress.tls }}
